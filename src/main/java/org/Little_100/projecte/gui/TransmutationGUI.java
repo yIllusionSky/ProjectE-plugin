@@ -1,6 +1,5 @@
 package org.Little_100.projecte.gui;
 
-import java.util.*;
 import org.Little_100.projecte.Debug;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.managers.EmcManager;
@@ -15,6 +14,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.*;
+
 public class TransmutationGUI implements InventoryHolder {
 
     private final Inventory inventory;
@@ -26,7 +27,6 @@ public class TransmutationGUI implements InventoryHolder {
     private GuiState currentState = GuiState.MAIN;
     private int page = 0;
     private String searchQuery = null;
-    private boolean removeMode = false;
 
     public enum GuiState {
         MAIN,
@@ -254,9 +254,8 @@ public class TransmutationGUI implements InventoryHolder {
                                     "clientside.transmutation_table.item_lore.emc_single", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.emc_stack", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.buy_one", lorePlaceholders),
-                            languageManager.get("clientside.transmutation_table.item_lore.buy_stack", lorePlaceholders),
-                            languageManager.get("clientside.transmutation_table.item_lore.remove_shift"),
-                            languageManager.get("clientside.transmutation_table.item_lore.remove_mode")));
+                            languageManager.get(
+                                    "clientside.transmutation_table.item_lore.buy_stack", lorePlaceholders)));
                     item.setItemMeta(meta);
                     // 计算槽位
                     int row = slotIndex / 7;
@@ -273,7 +272,6 @@ public class TransmutationGUI implements InventoryHolder {
                 languageManager.get("clientside.transmutation_table.buttons.back"),
                 languageManager.get("clientside.transmutation_table.buttons.back_lore"));
         inventory.setItem(0, backButton);
-        inventory.setItem(49, createBuyModeButton());
 
         if (page > 0) {
             ItemStack prevButton = createGuiItem(
@@ -286,17 +284,6 @@ public class TransmutationGUI implements InventoryHolder {
                     Material.ARROW, languageManager.get("clientside.transmutation_table.buttons.next_page"));
             inventory.setItem(50, nextButton);
         }
-    }
-
-    private ItemStack createBuyModeButton() {
-        String nameKey = removeMode
-                ? "clientside.transmutation_table.buttons.remove_mode"
-                : "clientside.transmutation_table.buttons.buy_mode";
-        String loreKey = removeMode
-                ? "clientside.transmutation_table.buttons.remove_mode_lore"
-                : "clientside.transmutation_table.buttons.buy_mode_lore";
-        Material material = removeMode ? Material.REDSTONE : Material.EMERALD;
-        return createGuiItem(material, languageManager.get(nameKey), languageManager.get(loreKey));
     }
 
     private void setupLearnScreen() {
@@ -349,7 +336,6 @@ public class TransmutationGUI implements InventoryHolder {
     public void setState(GuiState state) {
         this.currentState = state;
         this.page = 0;
-        this.removeMode = false;
         initializeItems();
     }
 
@@ -370,28 +356,6 @@ public class TransmutationGUI implements InventoryHolder {
         this.searchQuery = query;
         this.page = 0;
         initializeItems();
-    }
-
-    public boolean isRemoveMode() {
-        return removeMode;
-    }
-
-    public void toggleRemoveMode() {
-        removeMode = !removeMode;
-        initializeItems();
-    }
-
-    public void refreshCurrentView() {
-        initializeItems();
-    }
-
-    public void invalidateBuySlot(int slot) {
-        inventory.setItem(
-                slot,
-                createGuiItem(
-                        Material.GRAY_STAINED_GLASS_PANE,
-                        languageManager.get("clientside.transmutation_table.buttons.removed"),
-                        languageManager.get("clientside.transmutation_table.buttons.removed_lore")));
     }
 
     protected ItemStack createGuiItem(final Material material, final String name, final String... lore) {

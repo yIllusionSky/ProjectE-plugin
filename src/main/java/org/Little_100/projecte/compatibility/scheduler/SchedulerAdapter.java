@@ -17,7 +17,6 @@ public interface SchedulerAdapter {
     void runTask(Runnable task);
 
     void runTaskAsynchronously(Runnable task);
-
     void runTaskLater(Runnable task, long delay);
 
     void runTaskAt(Location location, Runnable task);

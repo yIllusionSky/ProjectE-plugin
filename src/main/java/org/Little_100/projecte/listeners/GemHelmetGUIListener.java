@@ -1,9 +1,9 @@
 package org.Little_100.projecte.listeners;
 
 import org.Little_100.projecte.ProjectE;
+import org.Little_100.projecte.util.InventoryViewHelper;
 import org.Little_100.projecte.armor.GemHelmet;
 import org.Little_100.projecte.gui.GemHelmetGUI;
-import org.Little_100.projecte.util.InventoryViewHelper;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

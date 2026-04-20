@@ -1,9 +1,9 @@
 package org.Little_100.projecte.listeners;
 
 import org.Little_100.projecte.ProjectE;
+import org.Little_100.projecte.util.InventoryViewHelper;
 import org.Little_100.projecte.gui.PhilosopherStoneGUI;
 import org.Little_100.projecte.util.Constants;
-import org.Little_100.projecte.util.InventoryViewHelper;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;

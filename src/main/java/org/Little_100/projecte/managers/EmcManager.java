@@ -1,7 +1,5 @@
 package org.Little_100.projecte.managers;
 
-import java.io.File;
-import java.util.*;
 import org.Little_100.projecte.Debug;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.compatibility.version.VersionAdapter;
@@ -14,6 +12,9 @@ import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.io.File;
+import java.util.*;
 
 public class EmcManager {
 
@@ -94,6 +95,7 @@ public class EmcManager {
             return false;
         }
 
+
         NamespacedKey key = null;
         if (recipe instanceof ShapedRecipe) {
             key = ((ShapedRecipe) recipe).getKey();
@@ -108,12 +110,12 @@ public class EmcManager {
         }
 
         String resultKey = getItemKey(result);
-
+        
         // 检查物品是否被锁定，如果被锁定则跳过配方计算
         if (isEmcLocked(resultKey)) {
             return false;
         }
-
+        
         long existingEmc = getEmc(resultKey);
         long newEmc = versionAdapter.calculateRecipeEmc(recipe, divisionStrategy);
 
@@ -187,7 +189,7 @@ public class EmcManager {
         if (!hasOnlyEnchantments(item)) {
             // 这是一个自定义物品，使用完整key查询/计算EMC
             String fullKey = getItemKey(item);
-            long customEmc = getEmc(fullKey); // 这会触发递归计算
+            long customEmc = getEmc(fullKey);  // 这会触发递归计算
             if (customEmc > 0) {
                 return applyDurabilityModifier(item, customEmc);
             }
@@ -198,7 +200,7 @@ public class EmcManager {
         // 对于纯默认或仅附魔物品，使用基础材料的EMC
         String baseKey = versionAdapter.getItemKey(item);
         long baseEmc = getEmc(baseKey);
-
+        
         if (baseEmc <= 0) {
             return 0;
         }
@@ -212,7 +214,7 @@ public class EmcManager {
         if (emcCache.containsKey(itemKey)) {
             return emcCache.get(itemKey);
         }
-
+        
         // 2. 检查数据库
         long emc = databaseManager.getEmc(itemKey);
         // 注意：即使emc为0，如果数据库中有记录，也应该缓存
@@ -229,7 +231,7 @@ public class EmcManager {
         // 4. 尝试通过配方计算(仅在启动时或重新计算时调用,不在GUI交互时调用)
         // 为了避免在Folia主线程中阻塞,我们不在这里进行配方遍历
         // 配方计算应该在服务器启动时完成
-
+        
         // 缓存结果(即使是0)以避免重复查询
         emcCache.put(itemKey, 0L);
         return 0;
@@ -243,7 +245,7 @@ public class EmcManager {
             ItemMeta meta = item.getItemMeta();
             if (meta != null) {
                 PersistentDataContainer container = meta.getPersistentDataContainer();
-
+                
                 // 首先检查ProjectE自己的ID_KEY
                 if (container.has(Constants.ID_KEY, PersistentDataType.STRING)) {
                     String projecteId = container.get(Constants.ID_KEY, PersistentDataType.STRING);
@@ -292,7 +294,7 @@ public class EmcManager {
                 if (container.has(EnergyCollector.KEY_MK3, PersistentDataType.BYTE)) {
                     return "projecte:energy_collector_mk3";
                 }
-
+                
                 // 检测其他插件的PDC
                 // Detect PDC from other plugins
                 Set<NamespacedKey> keys = container.getKeys();
@@ -311,7 +313,7 @@ public class EmcManager {
                             }
                         }
                     }
-
+                    
                     // 如果没有找到标准的ID key，使用第一个非ProjectE的key
                     for (NamespacedKey key : keys) {
                         if (!key.getNamespace().equals("projecte")) {
@@ -364,32 +366,32 @@ public class EmcManager {
         if (item == null || !item.hasItemMeta()) {
             return true; // 纯默认物品
         }
-
+        
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
             return true;
         }
-
+        
         // 检查是否有PDC
         if (!meta.getPersistentDataContainer().getKeys().isEmpty()) {
             return false;
         }
-
+        
         // 检查是否有CustomModelData
         if (meta.hasCustomModelData()) {
             return false;
         }
-
+        
         // 检查是否有自定义名称
         if (meta.hasDisplayName()) {
             return false;
         }
-
+        
         // 检查是否有Lore
         if (meta.hasLore()) {
             return false;
         }
-
+        
         // 如果只有附魔（或什么都没有），返回true
         return true;
     }
@@ -402,30 +404,30 @@ public class EmcManager {
         if (item == null || !item.hasItemMeta()) {
             return baseEmc;
         }
-
+        
         ItemMeta meta = item.getItemMeta();
         if (meta == null) {
             return baseEmc;
         }
-
+        
         // 检查物品是否有耐久度
         if (meta instanceof org.bukkit.inventory.meta.Damageable) {
             org.bukkit.inventory.meta.Damageable damageable = (org.bukkit.inventory.meta.Damageable) meta;
-
+            
             // 获取最大耐久度
             int maxDurability = item.getType().getMaxDurability();
             if (maxDurability > 0 && damageable.hasDamage()) {
                 int damage = damageable.getDamage();
                 int currentDurability = maxDurability - damage;
-
+                
                 // 计算耐久百分比
                 double durabilityPercent = (double) currentDurability / maxDurability;
-
+                
                 // 应用耐久修正
                 return (long) (baseEmc * durabilityPercent);
             }
         }
-
+        
         return baseEmc;
     }
 
@@ -501,10 +503,10 @@ public class EmcManager {
      */
     public void recalculateDefaultEmcValues() {
         plugin.getLogger().info("Start calculating default items EMC values...");
-
+        
         // 清空缓存
         emcCache.clear();
-
+        
         // 重新加载基础EMC值
         versionAdapter.loadInitialEmcValues();
 
@@ -515,12 +517,12 @@ public class EmcManager {
             while (recipeIterator.hasNext()) {
                 try {
                     Recipe recipe = recipeIterator.next();
-
+                    
                     // 跳过PDC物品
                     if (recipe.getResult() != null && isPdcItem(recipe.getResult())) {
                         continue;
                     }
-
+                    
                     if (calculateEmcForRecipe(recipe)) {
                         changed = true;
                     }
@@ -544,10 +546,10 @@ public class EmcManager {
      */
     public int recalculatePdcEmcValues() {
         plugin.getLogger().info("Start calculating PDC items EMC values...");
-
+        
         // 清空缓存以确保使用最新计算的值
         emcCache.clear();
-
+        
         boolean debug = plugin.getConfig().getBoolean("debug");
         int pdcRecipesFound = 0;
         Set<String> calculatedItems = new HashSet<>();
@@ -557,9 +559,8 @@ public class EmcManager {
         while (recipeIterator.hasNext()) {
             try {
                 Recipe recipe = recipeIterator.next();
-                if (recipe.getResult() != null
-                        && !recipe.getResult().getType().isAir()
-                        && isPdcItem(recipe.getResult())) {
+                if (recipe.getResult() != null && !recipe.getResult().getType().isAir() 
+                    && isPdcItem(recipe.getResult())) {
                     pdcRecipesFound++;
                 }
             } catch (Exception e) {
@@ -578,47 +579,42 @@ public class EmcManager {
         for (int i = 0; i < 5; i++) {
             plugin.getLogger().info("PDC EMC calculation iteration " + (i + 1) + "...");
             boolean changed = false;
-
+            
             currentlyCalculating.clear();
-
+            
             recipeIterator = Bukkit.recipeIterator();
             while (recipeIterator.hasNext()) {
                 try {
                     Recipe recipe = recipeIterator.next();
-                    if (recipe.getResult() == null
-                            || recipe.getResult().getType().isAir()) {
+                    if (recipe.getResult() == null || recipe.getResult().getType().isAir()) {
                         continue;
                     }
 
                     // 只处理PDC物品
                     if (isPdcItem(recipe.getResult())) {
                         String itemKey = getItemKey(recipe.getResult());
-
+                        
                         // 检查是否被锁定
                         if (isEmcLocked(itemKey)) {
                             continue;
                         }
-
+                        
                         long oldEmc = databaseManager.getEmc(itemKey);
-
+                        
                         // 计算配方的EMC
                         long recipeEmc = versionAdapter.calculateRecipeEmc(recipe, divisionStrategy);
-
+                        
                         if (debug && recipeEmc == 0 && oldEmc == 0) {
                             // 调试：显示为什么无法计算EMC
                             plugin.getLogger().warning("[PDC EMC Debug] Cannot calculate EMC for: " + itemKey);
-                            plugin.getLogger()
-                                    .warning("  Recipe type: "
-                                            + recipe.getClass().getSimpleName());
-
+                            plugin.getLogger().warning("  Recipe type: " + recipe.getClass().getSimpleName());
+                            
                             // 显示原料信息
                             if (recipe instanceof ShapedRecipe) {
                                 plugin.getLogger().warning("  Ingredients:");
                                 ShapedRecipe shaped = (ShapedRecipe) recipe;
-                                for (ItemStack ingredient :
-                                        shaped.getIngredientMap().values()) {
-                                    if (ingredient != null
-                                            && !ingredient.getType().isAir()) {
+                                for (ItemStack ingredient : shaped.getIngredientMap().values()) {
+                                    if (ingredient != null && !ingredient.getType().isAir()) {
                                         String ingKey = getItemKey(ingredient);
                                         long ingEmc = databaseManager.getEmc(ingKey);
                                         plugin.getLogger().warning("    - " + ingKey + ": " + ingEmc + " EMC");
@@ -628,8 +624,7 @@ public class EmcManager {
                                 plugin.getLogger().warning("  Ingredients:");
                                 ShapelessRecipe shapeless = (ShapelessRecipe) recipe;
                                 for (ItemStack ingredient : shapeless.getIngredientList()) {
-                                    if (ingredient != null
-                                            && !ingredient.getType().isAir()) {
+                                    if (ingredient != null && !ingredient.getType().isAir()) {
                                         String ingKey = getItemKey(ingredient);
                                         long ingEmc = databaseManager.getEmc(ingKey);
                                         plugin.getLogger().warning("    - " + ingKey + ": " + ingEmc + " EMC");
@@ -637,11 +632,11 @@ public class EmcManager {
                                 }
                             }
                         }
-
+                        
                         if (recipeEmc > 0) {
                             // 根据策略更新EMC
                             boolean shouldUpdate = false;
-
+                            
                             if (oldEmc <= 0) {
                                 // 还没有EMC值，直接设置
                                 shouldUpdate = true;
@@ -652,7 +647,7 @@ public class EmcManager {
                                 // 策略是最高值，且新值更高
                                 shouldUpdate = true;
                             }
-
+                            
                             if (shouldUpdate) {
                                 if (databaseManager.setEmcIfNotLocked(itemKey, recipeEmc)) {
                                     // 更新缓存
@@ -660,8 +655,7 @@ public class EmcManager {
                                     changed = true;
                                     calculatedItems.add(itemKey);
                                     if (debug) {
-                                        plugin.getLogger()
-                                                .info("[PDC EMC Calculated] " + itemKey + " = " + recipeEmc + " EMC");
+                                        plugin.getLogger().info("[PDC EMC Calculated] " + itemKey + " = " + recipeEmc + " EMC");
                                     }
                                 }
                             }
@@ -671,25 +665,23 @@ public class EmcManager {
                     // 忽略损坏的配方
                 }
             }
-
+            
             if (!changed) {
                 plugin.getLogger().info("PDC EMC values stabilized, calculation ended early.");
                 break;
             }
         }
 
-        plugin.getLogger()
-                .info("PDC items EMC calculation completed. " + calculatedItems.size() + " unique items calculated.");
-
+        plugin.getLogger().info("PDC items EMC calculation completed. " + calculatedItems.size() + " unique items calculated.");
+        
         // 报告未计算的PDC物品
         int uncalculatedCount = 0;
         recipeIterator = Bukkit.recipeIterator();
         while (recipeIterator.hasNext()) {
             try {
                 Recipe recipe = recipeIterator.next();
-                if (recipe.getResult() != null
-                        && !recipe.getResult().getType().isAir()
-                        && isPdcItem(recipe.getResult())) {
+                if (recipe.getResult() != null && !recipe.getResult().getType().isAir() 
+                    && isPdcItem(recipe.getResult())) {
                     String itemKey = getItemKey(recipe.getResult());
                     long emc = databaseManager.getEmc(itemKey);
                     if (emc <= 0 && !isEmcLocked(itemKey)) {
@@ -703,7 +695,7 @@ public class EmcManager {
                 // 忽略
             }
         }
-
+        
         if (uncalculatedCount > 0) {
             plugin.getLogger().warning("Warning: " + uncalculatedCount + " PDC items still don't have EMC values.");
             plugin.getLogger().warning("This may be due to missing ingredient EMC or circular dependencies.");
@@ -711,7 +703,7 @@ public class EmcManager {
                 plugin.getLogger().warning("Enable debug mode in config.yml to see which items are affected.");
             }
         }
-
+        
         return calculatedItems.size();
     }
 

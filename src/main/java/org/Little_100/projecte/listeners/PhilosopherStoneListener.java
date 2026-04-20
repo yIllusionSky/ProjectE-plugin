@@ -1,6 +1,5 @@
 package org.Little_100.projecte.listeners;
 
-import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.gui.PhilosopherStoneGUI;
 import org.Little_100.projecte.gui.TransmutationGUI;
@@ -20,6 +19,8 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+
+import java.util.*;
 
 public class PhilosopherStoneListener implements Listener {
 
@@ -139,7 +140,7 @@ public class PhilosopherStoneListener implements Listener {
         if (!plugin.getConfig().getBoolean("philosopher_stone.enabled", true)) {
             return;
         }
-
+        
         if (clickedBlock == null) return;
 
         // 获取转换区域
@@ -488,15 +489,15 @@ public class PhilosopherStoneListener implements Listener {
         for (Location loc : outlineLocations) {
             // 使用兼容的ParticleHelper
             ParticleHelper.spawnParticle(
-                    player,
-                    particleName,
-                    loc.clone().add(0.5, 0.6, 0.5),
-                    1, // count
-                    0, // offsetX
-                    0, // offsetY
-                    0, // offsetZ
-                    0 // extra (speed)
-                    );
+                player,
+                particleName,
+                loc.clone().add(0.5, 0.6, 0.5),
+                1,     // count
+                0,     // offsetX
+                0,     // offsetY
+                0,     // offsetZ
+                0      // extra (speed)
+            );
         }
     }
 

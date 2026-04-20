@@ -1,10 +1,11 @@
 package org.Little_100.projecte.devices;
 
-import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.*;
 
 public class AlchemicalChestManager {
 
@@ -19,7 +20,7 @@ public class AlchemicalChestManager {
     public void addChest(Location location, UUID ownerUUID) {
         String locationKey = getLocationKey(location);
         chestOwners.put(locationKey, ownerUUID);
-
+        
         ItemStack[] existingContents = plugin.getDatabaseManager().loadChestInventory(locationKey);
         plugin.getDatabaseManager().saveChestInventory(locationKey, ownerUUID, existingContents);
     }
@@ -65,16 +66,15 @@ public class AlchemicalChestManager {
     }
 
     public static String getLocationKey(Location location) {
-        return location.getWorld().getName() + "," + location.getBlockX()
-                + "," + location.getBlockY()
-                + "," + location.getBlockZ();
+        return location.getWorld().getName() + "," +
+                location.getBlockX() + "," +
+                location.getBlockY() + "," +
+                location.getBlockZ();
     }
 
-    public void loadChestData() {}
+    public void loadChestData() {
+    }
 
-    public void saveAllChests() {}
-
-    public void resetPersistentData() {
-        openChests.clear();
+    public void saveAllChests() {
     }
 }

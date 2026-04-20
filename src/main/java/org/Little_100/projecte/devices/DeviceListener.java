@@ -1,7 +1,5 @@
 package org.Little_100.projecte.devices;
 
-import java.util.Collection;
-import java.util.List;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,9 +15,13 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Collection;
+import java.util.List;
 
 public class DeviceListener implements Listener {
 
@@ -98,8 +100,7 @@ public class DeviceListener implements Listener {
         // 提前检查设备类型
         boolean isAlchemicalChest = meta.getPersistentDataContainer().has(AlchemicalChest.KEY, PersistentDataType.BYTE);
         boolean isEnergyCondenser = meta.getPersistentDataContainer().has(EnergyCondenser.KEY, PersistentDataType.BYTE);
-        boolean isEnergyCondenserMK2 =
-                meta.getPersistentDataContainer().has(EnergyCondenserMK2.KEY, PersistentDataType.BYTE);
+        boolean isEnergyCondenserMK2 = meta.getPersistentDataContainer().has(EnergyCondenserMK2.KEY, PersistentDataType.BYTE);
 
         if (furnaceType != null
                 || collectorType != null
@@ -123,9 +124,8 @@ public class DeviceListener implements Listener {
             plugin.getSchedulerAdapter().runTaskAt(location, () -> {
                 try {
                     Location armorStandLoc = location.clone().add(0.5, -0.39, 0.5);
-                    ArmorStand armorStand =
-                            (ArmorStand) location.getWorld().spawnEntity(armorStandLoc, EntityType.ARMOR_STAND);
-
+                    ArmorStand armorStand = (ArmorStand) location.getWorld().spawnEntity(armorStandLoc, EntityType.ARMOR_STAND);
+                    
                     armorStand.setSmall(true);
                     armorStand.setVisible(false);
                     armorStand.setGravity(false);
@@ -143,64 +143,55 @@ public class DeviceListener implements Listener {
 
                     // 设置头盔物品
                     armorStand.getEquipment().setHelmet(deviceItemCopy);
-
+                    
                     plugin.getLogger().info("成功生成盔甲架: " + armorStand.getUniqueId() + " 在 " + armorStandLoc);
-                    plugin.getLogger()
-                            .info("  - 头盔物品: " + deviceItemCopy.getType() + " (CMD: "
-                                    + (deviceItemCopy.hasItemMeta()
-                                                    && deviceItemCopy
-                                                            .getItemMeta()
-                                                            .hasCustomModelData()
-                                            ? deviceItemCopy.getItemMeta().getCustomModelData()
-                                            : "无")
-                                    + ")");
-                    plugin.getLogger()
-                            .info("  - 盔甲架设置: Small=" + armorStand.isSmall() + ", Visible=" + armorStand.isVisible()
-                                    + ", Marker=" + armorStand.isMarker());
+                    plugin.getLogger().info("  - 头盔物品: " + deviceItemCopy.getType() + " (CMD: " + 
+                        (deviceItemCopy.hasItemMeta() && deviceItemCopy.getItemMeta().hasCustomModelData() 
+                            ? deviceItemCopy.getItemMeta().getCustomModelData() 
+                            : "无") + ")");
+                    plugin.getLogger().info("  - 盔甲架设置: Small=" + armorStand.isSmall() + ", Visible=" + armorStand.isVisible() + ", Marker=" + armorStand.isMarker());
 
-                    NamespacedKey key = null;
-                    if (finalFurnaceType == FurnaceManager.FurnaceType.DARK_MATTER) {
-                        key = DarkMatterFurnace.KEY;
-                    } else if (finalFurnaceType == FurnaceManager.FurnaceType.RED_MATTER) {
-                        key = RedMatterFurnace.KEY;
-                    } else if (finalIsAlchemicalChest) {
-                        key = AlchemicalChest.KEY;
-                    } else if (finalIsEnergyCondenser) {
-                        key = EnergyCondenser.KEY;
-                    } else if (finalIsEnergyCondenserMK2) {
-                        key = EnergyCondenserMK2.KEY;
-                    } else if (finalCollectorType != null) {
-                        key = EnergyCollector.getKey(finalCollectorType);
-                    }
+                NamespacedKey key = null;
+                if (finalFurnaceType == FurnaceManager.FurnaceType.DARK_MATTER) {
+                    key = DarkMatterFurnace.KEY;
+                } else if (finalFurnaceType == FurnaceManager.FurnaceType.RED_MATTER) {
+                    key = RedMatterFurnace.KEY;
+                } else if (finalIsAlchemicalChest) {
+                    key = AlchemicalChest.KEY;
+                } else if (finalIsEnergyCondenser) {
+                    key = EnergyCondenser.KEY;
+                } else if (finalIsEnergyCondenserMK2) {
+                    key = EnergyCondenserMK2.KEY;
+                } else if (finalCollectorType != null) {
+                    key = EnergyCollector.getKey(finalCollectorType);
+                }
 
-                    if (key != null) {
-                        armorStand.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
-                    }
+                if (key != null) {
+                    armorStand.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
+                }
 
-                    if (finalFurnaceType != null) {
-                        plugin.getFurnaceManager()
-                                .addFurnace(location, player.getUniqueId(), finalFurnaceType, armorStand.getUniqueId());
-                    } else if (finalIsAlchemicalChest) {
-                        plugin.getAlchemicalChestManager().addChest(location, player.getUniqueId());
-                    } else if (finalCollectorType != null) {
-                        plugin.getEnergyCollectorManager()
-                                .addCollector(
-                                        location, player.getUniqueId(), finalCollectorType, armorStand.getUniqueId());
-                    } else if (finalIsEnergyCondenser) {
-                        plugin.getCondenserManager()
-                                .addCondenser(
-                                        location,
-                                        player.getUniqueId(),
-                                        CondenserManager.CondenserType.ENERGY_CONDENSER,
-                                        armorStand.getUniqueId());
-                    } else if (finalIsEnergyCondenserMK2) {
-                        plugin.getCondenserManager()
-                                .addCondenser(
-                                        location,
-                                        player.getUniqueId(),
-                                        CondenserManager.CondenserType.ENERGY_CONDENSER_MK2,
-                                        armorStand.getUniqueId());
-                    }
+                if (finalFurnaceType != null) {
+                    plugin.getFurnaceManager()
+                            .addFurnace(location, player.getUniqueId(), finalFurnaceType, armorStand.getUniqueId());
+                } else if (finalIsAlchemicalChest) {
+                    plugin.getAlchemicalChestManager().addChest(location, player.getUniqueId());
+                } else if (finalCollectorType != null) {
+                    plugin.getEnergyCollectorManager().addCollector(location, player.getUniqueId(), finalCollectorType, armorStand.getUniqueId());
+                } else if (finalIsEnergyCondenser) {
+                    plugin.getCondenserManager()
+                            .addCondenser(
+                                    location,
+                                    player.getUniqueId(),
+                                    CondenserManager.CondenserType.ENERGY_CONDENSER,
+                                    armorStand.getUniqueId());
+                } else if (finalIsEnergyCondenserMK2) {
+                    plugin.getCondenserManager()
+                            .addCondenser(
+                                    location,
+                                    player.getUniqueId(),
+                                    CondenserManager.CondenserType.ENERGY_CONDENSER_MK2,
+                                    armorStand.getUniqueId());
+                }
                 } catch (Exception e) {
                     plugin.getLogger().severe("生成盔甲架时出错: " + e.getMessage());
                     e.printStackTrace();
@@ -215,7 +206,7 @@ public class DeviceListener implements Listener {
         if (block.getType() != Material.BEACON) return;
 
         Location blockLoc = block.getLocation();
-
+        
         // 扩大检测范围，确保能找到
         Collection<Entity> nearbyEntities = block.getWorld()
                 .getNearbyEntities(
@@ -225,10 +216,10 @@ public class DeviceListener implements Listener {
             if (entity instanceof ArmorStand) {
                 ArmorStand armorStand = (ArmorStand) entity;
                 ItemStack helmet = armorStand.getEquipment().getHelmet();
-
+                
                 if (helmet != null && helmet.getItemMeta() != null) {
                     ItemMeta meta = helmet.getItemMeta();
-
+                    
                     if (meta.getPersistentDataContainer().has(DarkMatterFurnace.KEY, PersistentDataType.BYTE)
                             || meta.getPersistentDataContainer().has(RedMatterFurnace.KEY, PersistentDataType.BYTE)
                             || meta.getPersistentDataContainer().has(AlchemicalChest.KEY, PersistentDataType.BYTE)
@@ -236,23 +227,18 @@ public class DeviceListener implements Listener {
                             || meta.getPersistentDataContainer().has(EnergyCondenserMK2.KEY, PersistentDataType.BYTE)
                             || meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK1, PersistentDataType.BYTE)
                             || meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK2, PersistentDataType.BYTE)
-                            || meta.getPersistentDataContainer()
-                                    .has(EnergyCollector.KEY_MK3, PersistentDataType.BYTE)) {
+                            || meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK3, PersistentDataType.BYTE)) {
 
                         // 移除管理器中的数据
                         if (meta.getPersistentDataContainer().has(DarkMatterFurnace.KEY, PersistentDataType.BYTE)
                                 || meta.getPersistentDataContainer()
                                         .has(RedMatterFurnace.KEY, PersistentDataType.BYTE)) {
                             plugin.getFurnaceManager().removeFurnace(blockLoc);
-                        } else if (meta.getPersistentDataContainer()
-                                .has(AlchemicalChest.KEY, PersistentDataType.BYTE)) {
+                        } else if (meta.getPersistentDataContainer().has(AlchemicalChest.KEY, PersistentDataType.BYTE)) {
                             plugin.getAlchemicalChestManager().removeChest(blockLoc);
-                        } else if (meta.getPersistentDataContainer()
-                                        .has(EnergyCollector.KEY_MK1, PersistentDataType.BYTE)
-                                || meta.getPersistentDataContainer()
-                                        .has(EnergyCollector.KEY_MK2, PersistentDataType.BYTE)
-                                || meta.getPersistentDataContainer()
-                                        .has(EnergyCollector.KEY_MK3, PersistentDataType.BYTE)) {
+                        } else if (meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK1, PersistentDataType.BYTE)
+                                || meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK2, PersistentDataType.BYTE)
+                                || meta.getPersistentDataContainer().has(EnergyCollector.KEY_MK3, PersistentDataType.BYTE)) {
                             plugin.getEnergyCollectorManager().removeCollector(blockLoc);
                         } else if (meta.getPersistentDataContainer().has(EnergyCondenser.KEY, PersistentDataType.BYTE)
                                 || meta.getPersistentDataContainer()
@@ -267,12 +253,12 @@ public class DeviceListener implements Listener {
                         ItemStack dropItem = helmet.clone();
                         dropItem.setAmount(1);
                         block.getWorld().dropItemNaturally(blockLoc.clone().add(0.5, 0.5, 0.5), dropItem);
-
+                        
                         // 移除方块并取消事件
                         block.setType(Material.AIR);
                         event.setDropItems(false);
                         event.setCancelled(true);
-
+                        
                         plugin.getLogger().info("设备已被破坏并掉落: " + helmet.getType());
                         return;
                     }

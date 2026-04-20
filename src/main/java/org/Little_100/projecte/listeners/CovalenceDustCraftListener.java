@@ -1,6 +1,5 @@
 package org.Little_100.projecte.listeners;
 
-import java.util.HashMap;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.util.Constants;
 import org.bukkit.Material;
@@ -12,6 +11,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.HashMap;
 
 public class CovalenceDustCraftListener implements Listener {
 
@@ -29,11 +30,11 @@ public class CovalenceDustCraftListener implements Listener {
             }
             return;
         }
-
+        
         if (plugin.getConfig().getBoolean("debug")) {
             plugin.getLogger().info("[CovalenceDustCraftListener Debug] 监听器被触发");
         }
-
+        
         // 只处理工作台中的结果槽点击
         if (event.getSlotType() != InventoryType.SlotType.RESULT) return;
         if (!(event.getInventory() instanceof CraftingInventory)) return;
@@ -48,7 +49,7 @@ public class CovalenceDustCraftListener implements Listener {
             }
             return;
         }
-
+        
         if (plugin.getConfig().getBoolean("debug")) {
             plugin.getLogger().info("[CovalenceDustCraftListener Debug] 发现共价粉配方，开始处理");
         }

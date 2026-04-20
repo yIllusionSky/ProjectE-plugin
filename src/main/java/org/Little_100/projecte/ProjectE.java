@@ -1,14 +1,5 @@
 package org.Little_100.projecte;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import org.Little_100.projecte.accessories.*;
 import org.Little_100.projecte.alchemicalbag.AlchemicalBagManager;
 import org.Little_100.projecte.armor.ArmorManager;
@@ -41,6 +32,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public final class ProjectE extends JavaPlugin {
 
@@ -80,6 +80,7 @@ public final class ProjectE extends JavaPlugin {
     private AlchemicalChestManager alchemicalChestManager;
     private EnergyCollectorManager energyCollectorManager;
 
+
     private final Map<Material, Material> upgradeMap = new HashMap<>();
     private final Map<Material, Material> downgradeMap = new HashMap<>();
     private final Map<String, ItemStack> pdcItemCache = new HashMap<>();
@@ -109,7 +110,7 @@ public final class ProjectE extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-
+        
         // 初始化调度器适配器
         SchedulerAdapter.init(this);
         schedulerAdapter = SchedulerAdapter.getInstance();
@@ -178,7 +179,9 @@ public final class ProjectE extends JavaPlugin {
         // 初始化EMC管理器
         emcManager = new EmcManager(this);
         try {
-            recalculateBaseEmcValues(false);
+            getLogger().info("Calculating EMC values...");
+            emcManager.calculateAndStoreEmcValues(false);
+            getLogger().info("EMC calculation complete.");
         } catch (Exception e) {
             getLogger()
                     .severe(
@@ -393,22 +396,22 @@ public final class ProjectE extends JavaPlugin {
     private void createPhilosopherStone() {
         philosopherStone = new ItemStack(Material.POPPED_CHORUS_FRUIT);
         setMaxStackSize(philosopherStone, 1);
-
+        
         // 使用 MaterialStackSizeModifier 设置 Material 本身的堆叠限制
         try {
-            org.Little_100.projecte.util.MaterialStackSizeModifier modifier =
-                    new org.Little_100.projecte.util.MaterialStackSizeModifier(this);
+            org.Little_100.projecte.util.MaterialStackSizeModifier modifier = 
+                new org.Little_100.projecte.util.MaterialStackSizeModifier(this);
             modifier.setChorusFruitStackSize();
         } catch (Exception e) {
             getLogger().warning("使用 MaterialStackSizeModifier 设置堆叠限制失败: " + e.getMessage());
         }
     }
-
+    
     private void setMaxStackSize(ItemStack item, int maxStackSize) {
         if (item == null) {
             return;
         }
-
+        
         try {
             org.bukkit.inventory.meta.ItemMeta meta = item.getItemMeta();
             if (meta == null) {
@@ -417,11 +420,11 @@ public final class ProjectE extends JavaPlugin {
                     return;
                 }
             }
-
+            
             // 使用反射设置MaxStackSize (Minecraft 1.20.5+)
             try {
-                java.lang.reflect.Method setMaxStackSizeMethod =
-                        meta.getClass().getMethod("setMaxStackSize", Integer.class);
+                java.lang.reflect.Method setMaxStackSizeMethod = 
+                    meta.getClass().getMethod("setMaxStackSize", Integer.class);
                 setMaxStackSizeMethod.invoke(meta, maxStackSize);
                 item.setItemMeta(meta);
             } catch (NoSuchMethodException e) {
@@ -531,7 +534,7 @@ public final class ProjectE extends JavaPlugin {
         getLogger().info("All recipes have been reloaded.");
 
         emcManager = new EmcManager(this);
-        recalculateBaseEmcValues(true);
+        emcManager.calculateAndStoreEmcValues(true);
         if (deviceManager != null) {
             deviceManager.reloadDeviceItems();
         }
@@ -539,44 +542,21 @@ public final class ProjectE extends JavaPlugin {
         // 重新加载所有自定义EMC值
         loadCustomEmcValues();
 
-        reapplyProgrammaticEmcValues();
+        // 重新设置程序化定义的EMC值，因为它们在重载时被清除了
+        if (fuelManager != null) {
+            fuelManager.setFuelEmcValues();
+        }
+        if (covalenceDust != null) {
+            covalenceDust.setCovalenceDustEmcValues();
+        }
+        if (diviningRod != null) {
+            diviningRod.setDiviningRodEmcValues();
+        }
+        if (repairTalisman != null) {
+            repairTalisman.setEmcValue();
+        }
 
         getLogger().info("ProjectE plugin has been reloaded!");
-    }
-
-    public boolean resetTransmutationDatabase() {
-        File dbFile = databaseManager.getDatabaseFile();
-
-        if (databaseManager != null) {
-            databaseManager.close();
-        }
-
-        try {
-            Files.deleteIfExists(dbFile.toPath());
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Failed to delete transmutation database: " + dbFile.getAbsolutePath(), e);
-            return false;
-        }
-
-        databaseManager = new DatabaseManager(getDataFolder());
-        emcManager = new EmcManager(this);
-
-        if (alchemicalChestManager != null) {
-            alchemicalChestManager.resetPersistentData();
-        }
-        if (energyCollectorManager != null) {
-            energyCollectorManager.resetPersistentData();
-        }
-        if (condenserManager != null) {
-            condenserManager.resetPersistentData();
-        }
-
-        recalculateBaseEmcValues(false);
-        loadCustomEmcValues();
-        reapplyProgrammaticEmcValues();
-
-        getLogger().info("Transmutation database has been reset: " + dbFile.getAbsolutePath());
-        return true;
     }
 
     public VersionAdapter getVersionAdapter() {
@@ -675,36 +655,9 @@ public final class ProjectE extends JavaPlugin {
         return energyCollectorManager;
     }
 
-    private void recalculateBaseEmcValues(boolean forceRecalculate) {
-        getLogger().info("Calculating EMC values...");
-        emcManager.calculateAndStoreEmcValues(forceRecalculate);
-        getLogger().info("EMC calculation complete.");
-    }
-
-    private void reapplyProgrammaticEmcValues() {
-        if (fuelManager != null) {
-            fuelManager.setFuelEmcValues();
-        }
-        if (covalenceDust != null) {
-            covalenceDust.setCovalenceDustEmcValues();
-        }
-        if (diviningRod != null) {
-            diviningRod.setDiviningRodEmcValues();
-        }
-        if (repairTalisman != null) {
-            repairTalisman.setEmcValue();
-        }
-        if (toolManager != null) {
-            toolManager.registerToolEmcValues();
-        }
-        if (armorManager != null) {
-            armorManager.registerArmorEmcValues();
-        }
-    }
-
     private void loadConfigOptions() {
         // 不再控制pdc物品是否开关
-    }
+        }
 
     private void startContinuousParticleTask() {
         if (!getConfig().getBoolean("philosopher_stone.particle.enabled", true)) {
@@ -714,45 +667,39 @@ public final class ProjectE extends JavaPlugin {
         long keepAlive = getConfig().getLong("philosopher_stone.particle.keep-alive", 5);
         long period = (keepAlive == -1) ? 10L : keepAlive * 20L; // 如果为-1，则每半秒刷新一次，否则按配置的秒数刷新
 
-        getSchedulerAdapter()
-                .runTimer(
-                        () -> {
-                            for (Player player : Bukkit.getOnlinePlayers()) {
-                                ItemStack mainHand = player.getInventory().getItemInMainHand();
-                                ItemStack offHand = player.getInventory().getItemInOffHand();
+        getSchedulerAdapter().runTimer(
+                () -> {
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        ItemStack mainHand = player.getInventory().getItemInMainHand();
+                        ItemStack offHand = player.getInventory().getItemInOffHand();
 
-                                if (isPhilosopherStone(mainHand) || isPhilosopherStone(offHand)) {
-                                    Block targetBlock = null;
-                                    try {
-                                        // 添加世界数据检查以防止在Folia环境下的NullPointerException
-                                        if (player.getWorld() != null
-                                                && player.getWorld()
-                                                        .isChunkLoaded(
-                                                                player.getLocation()
-                                                                                .getBlockX()
-                                                                        >> 4,
-                                                                player.getLocation()
-                                                                                .getBlockZ()
-                                                                        >> 4)) {
-                                            targetBlock = player.getTargetBlock(null, 10);
-                                        }
-                                    } catch (Exception e) {
-                                    }
-                                    if (targetBlock != null
-                                            && !targetBlock.getType().isAir()) {
-                                        philosopherStoneListener.showContinuousOutline(player, targetBlock);
-                                    }
+                        if (isPhilosopherStone(mainHand) || isPhilosopherStone(offHand)) {
+                            Block targetBlock = null;
+                            try {
+                                // 添加世界数据检查以防止在Folia环境下的NullPointerException
+                                if (player.getWorld() != null
+                                        && player.getWorld()
+                                                .isChunkLoaded(
+                                                        player.getLocation().getBlockX() >> 4,
+                                                        player.getLocation().getBlockZ() >> 4)) {
+                                    targetBlock = player.getTargetBlock(null, 10);
                                 }
+                            } catch (Exception e) {
                             }
-                        },
-                        1L,
-                        period);
+                            if (targetBlock != null && !targetBlock.getType().isAir()) {
+                                philosopherStoneListener.showContinuousOutline(player, targetBlock);
+                            }
+                        }
+                    }
+                },
+                1L,
+                period);
     }
 
     public ItemStack getItemStackFromKey(String key) {
         // 保存原始key用于PDC物品查找
         String originalKey = key;
-
+        
         // 首先，规范化键，移除任何已知的命名空间前缀
         if (key.startsWith("projecte:")) {
             key = key.substring("projecte:".length());
@@ -764,7 +711,7 @@ public final class ProjectE extends JavaPlugin {
             case "philosopher_stone":
             case "transmutation_table":
                 return getPhilosopherStone();
-                // Fuels
+            // Fuels
             case "alchemical_coal":
                 return fuelManager.getAlchemicalCoal();
             case "mobius_fuel":
@@ -778,7 +725,7 @@ public final class ProjectE extends JavaPlugin {
             case "aeternalis_fuel_block":
                 return fuelManager.getAeternalisFuelBlock();
 
-                // Materials
+            // Materials
             case "dark_matter":
                 return fuelManager.getDarkMatter();
             case "red_matter":
@@ -788,7 +735,7 @@ public final class ProjectE extends JavaPlugin {
             case "red_matter_block":
                 return fuelManager.getRedMatterBlock();
 
-                // Covalence Dust
+            // Covalence Dust
             case "low_covalence_dust":
                 return covalenceDust.getLowCovalenceDust();
             case "medium_covalence_dust":
@@ -796,7 +743,7 @@ public final class ProjectE extends JavaPlugin {
             case "high_covalence_dust":
                 return covalenceDust.getHighCovalenceDust();
 
-                // Divining Rods
+            // Divining Rods
             case "low_divining_rod":
                 return diviningRod.getLowDiviningRod();
             case "medium_divining_rod":
@@ -804,11 +751,11 @@ public final class ProjectE extends JavaPlugin {
             case "high_divining_rod":
                 return diviningRod.getHighDiviningRod();
 
-                // Talismans
+            // Talismans
             case "repair_talisman":
                 return repairTalisman.getRepairTalisman();
 
-                // Dark Matter Tools
+            // Dark Matter Tools
             case "dark_matter_pickaxe":
                 return toolManager.getDarkMatterPickaxe();
             case "dark_matter_axe":
@@ -824,7 +771,7 @@ public final class ProjectE extends JavaPlugin {
             case "dark_matter_hammer":
                 return toolManager.getDarkMatterHammer();
 
-                // Red Matter Tools
+            // Red Matter Tools
             case "red_matter_pickaxe":
                 return toolManager.getRedMatterPickaxe();
             case "red_matter_axe":
@@ -844,7 +791,7 @@ public final class ProjectE extends JavaPlugin {
             case "red_matter_morningstar":
                 return toolManager.getRedMatterMorningstar();
 
-                // Dark Matter Armor
+            // Dark Matter Armor
             case "dark_matter_helmet":
                 return armorManager.getDarkMatterHelmet();
             case "dark_matter_chestplate":
@@ -854,7 +801,7 @@ public final class ProjectE extends JavaPlugin {
             case "dark_matter_boots":
                 return armorManager.getDarkMatterBoots();
 
-                // Red Matter Armor
+            // Red Matter Armor
             case "red_matter_helmet":
                 return armorManager.getRedMatterHelmet();
             case "red_matter_chestplate":
@@ -864,7 +811,7 @@ public final class ProjectE extends JavaPlugin {
             case "red_matter_boots":
                 return armorManager.getRedMatterBoots();
 
-                // Gem Armor
+            // Gem Armor
             case "gem_helmet":
                 return armorManager.getGemHelmet();
             case "gem_chestplate":
@@ -874,7 +821,7 @@ public final class ProjectE extends JavaPlugin {
             case "gem_boots":
                 return armorManager.getGemBoots();
 
-                // Klein Stars (Corrected Keys)
+            // Klein Stars (Corrected Keys)
             case "klein_star_ein":
                 return kleinStarManager.getKleinStar(1);
             case "klein_star_zwei":
@@ -888,7 +835,7 @@ public final class ProjectE extends JavaPlugin {
             case "klein_star_omega":
                 return kleinStarManager.getKleinStar(6);
 
-                // Accessories
+            // Accessories
             case "body_stone":
                 return BodyStone.createBodyStone();
             case "soul_stone":
@@ -898,7 +845,7 @@ public final class ProjectE extends JavaPlugin {
             case "mind_stone":
                 return MindStone.createMindStone();
 
-                // Devices
+            // Devices
             case "dark_matter_furnace":
                 return deviceManager.getDarkMatterFurnaceItem();
             case "red_matter_furnace":
@@ -926,7 +873,7 @@ public final class ProjectE extends JavaPlugin {
                 if (material != null) {
                     return new ItemStack(material);
                 }
-
+                
                 // 尝试从配方中查找PDC物品
                 // 如果原始key包含:判断为其他插件的PDC物品
                 if (originalKey.contains(":") && !originalKey.startsWith("minecraft:")) {
@@ -934,14 +881,13 @@ public final class ProjectE extends JavaPlugin {
                     if (pdcItemCache.containsKey(originalKey)) {
                         return pdcItemCache.get(originalKey).clone();
                     }
-
+                    
                     // 遍历所有配方查找
                     Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
                     while (recipeIterator.hasNext()) {
                         try {
                             Recipe recipe = recipeIterator.next();
-                            if (recipe.getResult() != null
-                                    && !recipe.getResult().getType().isAir()) {
+                            if (recipe.getResult() != null && !recipe.getResult().getType().isAir()) {
                                 ItemStack result = recipe.getResult();
                                 String resultKey = emcManager.getItemKey(result);
                                 if (resultKey.equals(originalKey)) {

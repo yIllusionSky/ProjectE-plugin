@@ -25,8 +25,8 @@ public class EnergyCollectorGUI implements Listener {
 
     private static final int EMC_DISPLAY_SLOT = 49;
 
-    public EnergyCollectorGUI(
-            ProjectE plugin, Player player, Location location, EnergyCollectorManager.CollectorData data) {
+    public EnergyCollectorGUI(ProjectE plugin, Player player, Location location,
+            EnergyCollectorManager.CollectorData data) {
         this.plugin = plugin;
         this.player = player;
         this.collectorLocation = location;
@@ -77,11 +77,11 @@ public class EnergyCollectorGUI implements Listener {
     private int[] getSlotPositions(int type) {
         switch (type) {
             case EnergyCollector.TYPE_MK1:
-                return new int[] {20, 21, 22, 23};
+                return new int[] { 20, 21, 22, 23 };
             case EnergyCollector.TYPE_MK2:
-                return new int[] {19, 20, 21, 22, 28, 29, 30, 31};
+                return new int[] { 19, 20, 21, 22, 28, 29, 30, 31 };
             case EnergyCollector.TYPE_MK3:
-                return new int[] {19, 20, 21, 22, 28, 29, 30, 31, 37, 38, 39, 40};
+                return new int[] { 19, 20, 21, 22, 28, 29, 30, 31, 37, 38, 39, 40 };
             default:
                 return new int[0];
         }
@@ -101,8 +101,7 @@ public class EnergyCollectorGUI implements Listener {
         ItemStack emcDisplay = new ItemStack(Material.GLOWSTONE_DUST);
         ItemMeta meta = emcDisplay.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(plugin.getLanguageManager()
-                    .get("gui.energy_collector.emc_display")
+            meta.setDisplayName(plugin.getLanguageManager().get("gui.energy_collector.emc_display")
                     .replace("%emc%", String.valueOf(currentEmc)));
             emcDisplay.setItemMeta(meta);
         }
@@ -121,9 +120,12 @@ public class EnergyCollectorGUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        if (!event.getWhoClicked().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getWhoClicked() instanceof Player))
+            return;
+        if (!event.getWhoClicked().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         int slot = event.getRawSlot();
 
@@ -135,13 +137,17 @@ public class EnergyCollectorGUI implements Listener {
             event.setCancelled(true);
             return;
         }
+
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        if (!event.getWhoClicked().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getWhoClicked() instanceof Player))
+            return;
+        if (!event.getWhoClicked().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         for (int slot : event.getRawSlots()) {
             if (slot >= 0 && slot < 54) {
@@ -155,9 +161,12 @@ public class EnergyCollectorGUI implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) return;
-        if (!event.getPlayer().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getPlayer() instanceof Player))
+            return;
+        if (!event.getPlayer().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         int[] slotPositions = getSlotPositions(data.type);
         for (int i = 0; i < slotPositions.length; i++) {

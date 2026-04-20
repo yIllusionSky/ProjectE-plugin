@@ -1,6 +1,5 @@
 package org.Little_100.projecte.devices;
 
-import java.util.Map;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -9,6 +8,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Map;
 
 public class CondenserListener implements Listener {
 
@@ -51,10 +52,10 @@ public class CondenserListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Inventory closedInventory = event.getInventory();
-
+        
         Location condenserLocation = null;
         CondenserManager.CondenserState condenserState = null;
-
+        
         for (Map.Entry<Location, CondenserManager.CondenserState> entry :
                 condenserManager.getActiveCondensers().entrySet()) {
             if (entry.getValue().getInventory().equals(closedInventory)) {
@@ -63,27 +64,27 @@ public class CondenserListener implements Listener {
                 break;
             }
         }
-
+        
         if (condenserLocation != null && condenserState != null) {
-            String locationKey = condenserLocation.getWorld().getName() + ","
-                    + condenserLocation.getBlockX() + ","
-                    + condenserLocation.getBlockY() + ","
-                    + condenserLocation.getBlockZ();
-
+            String locationKey = condenserLocation.getWorld().getName() + "," 
+                + condenserLocation.getBlockX() + "," 
+                + condenserLocation.getBlockY() + "," 
+                + condenserLocation.getBlockZ();
+            
             ItemStack targetItem = null;
             Integer targetSlotIndex = condenserManager.getTargetSlotIndex(condenserState.getType());
             if (targetSlotIndex != null) {
                 targetItem = closedInventory.getItem(targetSlotIndex);
             }
-
-            plugin.getDatabaseManager()
-                    .saveCondenserData(
-                            locationKey,
-                            condenserState.getOwner(),
-                            condenserState.getType().ordinal(),
-                            closedInventory.getContents(),
-                            targetItem,
-                            condenserState.getStoredEmc());
+            
+            plugin.getDatabaseManager().saveCondenserData(
+                locationKey,
+                condenserState.getOwner(),
+                condenserState.getType().ordinal(),
+                closedInventory.getContents(),
+                targetItem,
+                condenserState.getStoredEmc()
+            );
         }
     }
 }

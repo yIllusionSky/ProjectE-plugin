@@ -1,6 +1,5 @@
 package org.Little_100.projecte.gui;
 
-import java.util.List;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.tools.ToolManager;
 import org.Little_100.projecte.util.Constants;
@@ -15,6 +14,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.List;
 
 public class ToolChargeGUI {
 

@@ -1,15 +1,16 @@
 package org.Little_100.projecte.storage;
 
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.io.BukkitObjectInputStream;
-import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 public class DatabaseManager {
 
@@ -40,10 +41,6 @@ public class DatabaseManager {
         }
     }
 
-    public File getDatabaseFile() {
-        return new File(dataFolder, "gui/transmutation.db");
-    }
-
     private void createTables() {
         try (Statement statement = connection.createStatement()) {
             // 检查emc_values表是否存在locked列
@@ -65,14 +62,16 @@ public class DatabaseManager {
                     statement.execute("ALTER TABLE emc_values ADD COLUMN locked INTEGER NOT NULL DEFAULT 0;");
                 } catch (SQLException e) {
                     // 表可能不存在，创建新表
-                    statement.execute("CREATE TABLE IF NOT EXISTS emc_values ("
-                            + "item_key TEXT PRIMARY KEY,"
+                    statement.execute(
+                            "CREATE TABLE IF NOT EXISTS emc_values (" 
+                            + "item_key TEXT PRIMARY KEY," 
                             + "emc BIGINT NOT NULL,"
                             + "locked INTEGER NOT NULL DEFAULT 0);");
                 }
             } else {
-                statement.execute("CREATE TABLE IF NOT EXISTS emc_values ("
-                        + "item_key TEXT PRIMARY KEY,"
+                statement.execute(
+                        "CREATE TABLE IF NOT EXISTS emc_values (" 
+                        + "item_key TEXT PRIMARY KEY," 
                         + "emc BIGINT NOT NULL,"
                         + "locked INTEGER NOT NULL DEFAULT 0);");
             }
@@ -98,7 +97,7 @@ public class DatabaseManager {
                     + "collector_type INTEGER NOT NULL,"
                     + "stored_emc BIGINT NOT NULL DEFAULT 0,"
                     + "inventory_contents TEXT);");
-
+            
             statement.execute("CREATE TABLE IF NOT EXISTS energy_condensers (" + "location TEXT PRIMARY KEY,"
                     + "owner_uuid TEXT NOT NULL,"
                     + "condenser_type INTEGER NOT NULL,"
@@ -270,18 +269,6 @@ public class DatabaseManager {
         }
         addLearnedItem(playerUuid, itemKey);
         return true;
-    }
-
-    public boolean removeLearnedItem(UUID playerUuid, String itemKey) {
-        String sql = "DELETE FROM learned_items WHERE player_uuid = ? AND item_key = ?;";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, playerUuid.toString());
-            pstmt.setString(2, itemKey);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     public java.util.List<String> getLearnedItems(UUID playerUuid) {
@@ -501,8 +488,7 @@ public class DatabaseManager {
         return null;
     }
 
-    public void saveCollectorData(
-            String locationKey, UUID ownerUUID, int collectorType, long storedEmc, ItemStack[] items) {
+    public void saveCollectorData(String locationKey, UUID ownerUUID, int collectorType, long storedEmc, ItemStack[] items) {
         String base64Data = null;
         if (items != null) {
             try {
@@ -600,14 +586,8 @@ public class DatabaseManager {
         }
         return null;
     }
-
-    public void saveCondenserData(
-            String locationKey,
-            UUID ownerUUID,
-            int condenserType,
-            ItemStack[] inventoryContents,
-            ItemStack targetItem,
-            long storedEmc) {
+    public void saveCondenserData(String locationKey, UUID ownerUUID, int condenserType, 
+            ItemStack[] inventoryContents, ItemStack targetItem, long storedEmc) {
         String base64Inventory = "";
         if (inventoryContents != null) {
             try {

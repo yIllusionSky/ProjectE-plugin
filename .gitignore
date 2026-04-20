@@ -11,7 +11,7 @@ build/
 gradle/
 bin/
 out/
-.gradle-home
+
 # Minecraft/Plugin
 run/
 ProjectE Resourcepack/

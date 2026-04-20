@@ -1,6 +1,5 @@
 package org.Little_100.projecte.gui;
 
-import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,6 +11,8 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
 
 public class PdcItemDebugGUI {
 
@@ -25,13 +26,13 @@ public class PdcItemDebugGUI {
         this.player = player;
         this.pdcItems = new ArrayList<>();
         this.page = 0;
-
+        
         scanPdcItems();
     }
 
     private void scanPdcItems() {
         Set<String> addedKeys = new HashSet<>();
-
+        
         Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
         while (recipeIterator.hasNext()) {
             try {
@@ -50,7 +51,7 @@ public class PdcItemDebugGUI {
                 // 忽略损坏的配方
             }
         }
-
+        
         pdcItems.sort((a, b) -> {
             String keyA = plugin.getEmcManager().getItemKey(a);
             String keyB = plugin.getEmcManager().getItemKey(b);
@@ -70,13 +71,13 @@ public class PdcItemDebugGUI {
             if (meta != null) {
                 String itemKey = plugin.getEmcManager().getItemKey(item);
                 long emc = plugin.getDatabaseManager().getEmc(itemKey);
-
+                
                 List<String> lore = new ArrayList<>();
                 lore.add(ChatColor.GRAY + "Key: " + ChatColor.YELLOW + itemKey);
                 lore.add(ChatColor.GRAY + "EMC: " + ChatColor.GREEN + (emc > 0 ? emc : ChatColor.RED + "未计算"));
                 lore.add("");
                 lore.add(ChatColor.GOLD + "点击查看详细信息");
-
+                
                 meta.setLore(lore);
                 item.setItemMeta(meta);
             }
@@ -134,33 +135,32 @@ public class PdcItemDebugGUI {
         player.sendMessage(ChatColor.GOLD + "========== PDC物品调试信息 ==========");
         player.sendMessage(ChatColor.YELLOW + "物品Key: " + ChatColor.WHITE + itemKey);
         player.sendMessage(ChatColor.YELLOW + "当前EMC: " + ChatColor.WHITE + (emc > 0 ? emc : ChatColor.RED + "未计算"));
-
+        
         // 输出到控制台
         plugin.getLogger().info("========== PDC Item Debug ==========");
         plugin.getLogger().info("Item Key: " + itemKey);
         plugin.getLogger().info("Current EMC: " + emc);
         plugin.getLogger().info("Item Type: " + item.getType());
         plugin.getLogger().info("Has ItemMeta: " + item.hasItemMeta());
-
+        
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
             plugin.getLogger().info("Has DisplayName: " + meta.hasDisplayName());
             plugin.getLogger().info("Has CustomModelData: " + meta.hasCustomModelData());
-            plugin.getLogger()
-                    .info("PDC Keys: " + meta.getPersistentDataContainer().getKeys());
+            plugin.getLogger().info("PDC Keys: " + meta.getPersistentDataContainer().getKeys());
         }
 
         // 查找所有相关配方
         player.sendMessage(ChatColor.YELLOW + "相关配方:");
         plugin.getLogger().info("Related Recipes:");
-
+        
         int recipeCount = 0;
         Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
         while (recipeIterator.hasNext()) {
             try {
                 Recipe recipe = recipeIterator.next();
                 if (recipe.getResult() == null) continue;
-
+                
                 String resultKey = plugin.getEmcManager().getItemKey(recipe.getResult());
                 if (resultKey.equals(itemKey)) {
                     recipeCount++;
@@ -181,16 +181,15 @@ public class PdcItemDebugGUI {
     }
 
     private void showRecipeDebug(Recipe recipe, int index) {
-        player.sendMessage(
-                ChatColor.AQUA + "配方 #" + index + " (" + recipe.getClass().getSimpleName() + ")");
+        player.sendMessage(ChatColor.AQUA + "配方 #" + index + " (" + recipe.getClass().getSimpleName() + ")");
         plugin.getLogger().info("Recipe #" + index + " (" + recipe.getClass().getSimpleName() + ")");
 
         // 计算配方EMC
         String divisionStrategy = plugin.getConfig().getString("TransmutationTable.EMC.divisionStrategy", "floor");
         long calculatedEmc = plugin.getVersionAdapter().calculateRecipeEmc(recipe, divisionStrategy);
-
-        player.sendMessage(ChatColor.YELLOW + "  计算出的EMC: " + ChatColor.WHITE
-                + (calculatedEmc > 0 ? calculatedEmc : ChatColor.RED + "0 (无法计算)"));
+        
+        player.sendMessage(ChatColor.YELLOW + "  计算出的EMC: " + ChatColor.WHITE + 
+            (calculatedEmc > 0 ? calculatedEmc : ChatColor.RED + "0 (无法计算)"));
         plugin.getLogger().info("  Calculated EMC: " + calculatedEmc);
 
         // 显示原料
@@ -199,8 +198,7 @@ public class PdcItemDebugGUI {
 
         if (recipe instanceof ShapedRecipe) {
             ShapedRecipe shaped = (ShapedRecipe) recipe;
-            for (Map.Entry<Character, ItemStack> entry :
-                    shaped.getIngredientMap().entrySet()) {
+            for (Map.Entry<Character, ItemStack> entry : shaped.getIngredientMap().entrySet()) {
                 if (entry.getValue() != null && !entry.getValue().getType().isAir()) {
                     showIngredientDebug(entry.getValue());
                 }
@@ -220,21 +218,20 @@ public class PdcItemDebugGUI {
         String baseKey = plugin.getVersionAdapter().getItemKey(ingredient);
         long ingEmc = plugin.getDatabaseManager().getEmc(ingKey);
         boolean isPdc = plugin.getEmcManager().isPdcItem(ingredient);
-
-        String message = ChatColor.GRAY + "    - " + ingredient.getType() + " x" + ingredient.getAmount()
-                + ChatColor.YELLOW + " [" + (isPdc ? "PDC" : "原版") + "]";
-
+        
+        String message = ChatColor.GRAY + "    - " + ingredient.getType() + " x" + ingredient.getAmount() + 
+            ChatColor.YELLOW + " [" + (isPdc ? "PDC" : "原版") + "]";
+        
         player.sendMessage(message);
         player.sendMessage(ChatColor.GRAY + "      Key: " + ChatColor.WHITE + ingKey);
         if (!ingKey.equals(baseKey)) {
             player.sendMessage(ChatColor.GRAY + "      Base Key: " + ChatColor.WHITE + baseKey);
         }
-        player.sendMessage(
-                ChatColor.GRAY + "      EMC: " + ChatColor.WHITE + (ingEmc > 0 ? ingEmc : ChatColor.RED + "0 (未设置)"));
-
-        plugin.getLogger()
-                .info("    - " + ingredient.getType() + " x" + ingredient.getAmount() + " ["
-                        + (isPdc ? "PDC" : "Vanilla") + "]");
+        player.sendMessage(ChatColor.GRAY + "      EMC: " + ChatColor.WHITE + 
+            (ingEmc > 0 ? ingEmc : ChatColor.RED + "0 (未设置)"));
+        
+        plugin.getLogger().info("    - " + ingredient.getType() + " x" + ingredient.getAmount() + 
+            " [" + (isPdc ? "PDC" : "Vanilla") + "]");
         plugin.getLogger().info("      Key: " + ingKey);
         if (!ingKey.equals(baseKey)) {
             plugin.getLogger().info("      Base Key: " + baseKey);

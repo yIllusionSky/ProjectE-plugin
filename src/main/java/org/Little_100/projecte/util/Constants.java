@@ -1,9 +1,10 @@
 package org.Little_100.projecte.util;
 
-import java.util.Map;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class Constants {

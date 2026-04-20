@@ -1,6 +1,5 @@
 package org.Little_100.projecte.devices;
 
-import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -14,6 +13,8 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
 
 public class AlchemicalChestGUI implements Listener {
 
@@ -48,8 +49,7 @@ public class AlchemicalChestGUI implements Listener {
     private void openPage(int page) {
         this.currentPage = page;
 
-        String title = plugin.getLanguageManager()
-                .get("gui.alchemical_chest.title")
+        String title = plugin.getLanguageManager().get("gui.alchemical_chest.title")
                 .replace("%page%", String.valueOf(page + 1))
                 .replace("%total%", String.valueOf(TOTAL_PAGES));
 
@@ -75,26 +75,18 @@ public class AlchemicalChestGUI implements Listener {
         }
 
         if (currentPage > 0) {
-            inventory.setItem(
-                    PREV_PAGE_SLOT,
-                    createControlButton(
-                            Material.ARROW, plugin.getLanguageManager().get("gui.alchemical_chest.prev_page")));
+            inventory.setItem(PREV_PAGE_SLOT, createControlButton(Material.ARROW,
+                    plugin.getLanguageManager().get("gui.alchemical_chest.prev_page")));
         }
 
-        inventory.setItem(
-                PAGE_INFO_SLOT,
-                createControlButton(
-                        Material.PAPER,
-                        plugin.getLanguageManager()
-                                .get("gui.alchemical_chest.page_info")
-                                .replace("%page%", String.valueOf(page + 1))
-                                .replace("%total%", String.valueOf(TOTAL_PAGES))));
+        inventory.setItem(PAGE_INFO_SLOT, createControlButton(Material.PAPER,
+                plugin.getLanguageManager().get("gui.alchemical_chest.page_info")
+                        .replace("%page%", String.valueOf(page + 1))
+                        .replace("%total%", String.valueOf(TOTAL_PAGES))));
 
         if (currentPage < TOTAL_PAGES - 1) {
-            inventory.setItem(
-                    NEXT_PAGE_SLOT,
-                    createControlButton(
-                            Material.ARROW, plugin.getLanguageManager().get("gui.alchemical_chest.next_page")));
+            inventory.setItem(NEXT_PAGE_SLOT, createControlButton(Material.ARROW,
+                    plugin.getLanguageManager().get("gui.alchemical_chest.next_page")));
         }
 
         player.openInventory(inventory);
@@ -122,9 +114,12 @@ public class AlchemicalChestGUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        if (!event.getWhoClicked().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getWhoClicked() instanceof Player))
+            return;
+        if (!event.getWhoClicked().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         int slot = event.getRawSlot();
 
@@ -152,13 +147,17 @@ public class AlchemicalChestGUI implements Listener {
             }
             return;
         }
+
     }
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        if (!event.getWhoClicked().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getWhoClicked() instanceof Player))
+            return;
+        if (!event.getWhoClicked().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         int startIndex = currentPage * PAGE_SIZE;
         int itemsOnThisPage = Math.min(PAGE_SIZE, TOTAL_SLOTS - startIndex);
@@ -179,9 +178,12 @@ public class AlchemicalChestGUI implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) return;
-        if (!event.getPlayer().equals(player)) return;
-        if (event.getInventory() != inventory) return;
+        if (!(event.getPlayer() instanceof Player))
+            return;
+        if (!event.getPlayer().equals(player))
+            return;
+        if (event.getInventory() != inventory)
+            return;
 
         saveCurrentPage();
 

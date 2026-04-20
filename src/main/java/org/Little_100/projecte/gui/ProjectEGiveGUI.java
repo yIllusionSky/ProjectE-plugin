@@ -1,7 +1,7 @@
 package org.Little_100.projecte.gui;
 
-import java.util.*;
 import org.Little_100.projecte.ProjectE;
+import org.Little_100.projecte.devices.EnergyCollector;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,6 +12,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.*;
 
 public class ProjectEGiveGUI implements Listener {
 
@@ -43,7 +45,7 @@ public class ProjectEGiveGUI implements Listener {
     public ProjectEGiveGUI(ProjectE plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
-
+        
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         initializeItems();
     }
@@ -57,7 +59,7 @@ public class ProjectEGiveGUI implements Listener {
         addItem("dark_matter_hoe", "§d暗物质锄", "工具", plugin.getItemStackFromKey("dark_matter_hoe"));
         addItem("dark_matter_hammer", "§d暗物质锤", "工具", plugin.getItemStackFromKey("dark_matter_hammer"));
         addItem("dark_matter_shears", "§d暗物质剪刀", "工具", plugin.getItemStackFromKey("dark_matter_shears"));
-
+        
         addItem("red_matter_pickaxe", "§c红物质镐", "工具", plugin.getItemStackFromKey("red_matter_pickaxe"));
         addItem("red_matter_axe", "§c红物质斧", "工具", plugin.getItemStackFromKey("red_matter_axe"));
         addItem("red_matter_shovel", "§c红物质锹", "工具", plugin.getItemStackFromKey("red_matter_shovel"));
@@ -92,12 +94,12 @@ public class ProjectEGiveGUI implements Listener {
         addItem("dark_matter_chestplate", "§d暗物质胸甲", "护甲", plugin.getItemStackFromKey("dark_matter_chestplate"));
         addItem("dark_matter_leggings", "§d暗物质护腿", "护甲", plugin.getItemStackFromKey("dark_matter_leggings"));
         addItem("dark_matter_boots", "§d暗物质靴子", "护甲", plugin.getItemStackFromKey("dark_matter_boots"));
-
+        
         addItem("red_matter_helmet", "§c红物质头盔", "护甲", plugin.getItemStackFromKey("red_matter_helmet"));
         addItem("red_matter_chestplate", "§c红物质胸甲", "护甲", plugin.getItemStackFromKey("red_matter_chestplate"));
         addItem("red_matter_leggings", "§c红物质护腿", "护甲", plugin.getItemStackFromKey("red_matter_leggings"));
         addItem("red_matter_boots", "§c红物质靴子", "护甲", plugin.getItemStackFromKey("red_matter_boots"));
-
+        
         addItem("gem_helmet", "§b宝石头盔", "护甲", plugin.getItemStackFromKey("gem_helmet"));
 
         addItem("body_stone", "§6身体之石", "饰品", plugin.getItemStackFromKey("body_stone"));
@@ -132,12 +134,11 @@ public class ProjectEGiveGUI implements Listener {
 
     private void openPage(int page) {
         this.currentPage = page;
-
-        String title = plugin.getLanguageManager()
-                .get("gui.projecte_give.title")
+        
+        String title = plugin.getLanguageManager().get("gui.projecte_give.title")
                 .replace("%page%", String.valueOf(page + 1))
                 .replace("%total%", String.valueOf(getTotalPages()));
-
+        
         inventory = Bukkit.createInventory(null, 54, title);
 
         int startIndex = page * ITEMS_PER_PAGE;
@@ -146,7 +147,7 @@ public class ProjectEGiveGUI implements Listener {
         for (int i = startIndex; i < endIndex; i++) {
             GiveItem giveItem = allItems.get(i);
             ItemStack displayItem = giveItem.itemStack.clone();
-
+            
             ItemMeta meta = displayItem.getItemMeta();
             if (meta != null) {
                 List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
@@ -159,7 +160,7 @@ public class ProjectEGiveGUI implements Listener {
                 meta.setLore(lore);
                 displayItem.setItemMeta(meta);
             }
-
+            
             inventory.setItem(i - startIndex, displayItem);
         }
 
@@ -173,22 +174,16 @@ public class ProjectEGiveGUI implements Listener {
         }
 
         if (currentPage > 0) {
-            inventory.setItem(
-                    PREV_PAGE_SLOT,
-                    createControlButton(
-                            Material.ARROW, plugin.getLanguageManager().get("gui.projecte_give.prev_page")));
+            inventory.setItem(PREV_PAGE_SLOT, createControlButton(Material.ARROW, 
+                plugin.getLanguageManager().get("gui.projecte_give.prev_page")));
         }
 
-        inventory.setItem(
-                CLOSE_SLOT,
-                createControlButton(
-                        Material.BARRIER, plugin.getLanguageManager().get("gui.projecte_give.close")));
+        inventory.setItem(CLOSE_SLOT, createControlButton(Material.BARRIER,
+            plugin.getLanguageManager().get("gui.projecte_give.close")));
 
         if (currentPage < getTotalPages() - 1) {
-            inventory.setItem(
-                    NEXT_PAGE_SLOT,
-                    createControlButton(
-                            Material.ARROW, plugin.getLanguageManager().get("gui.projecte_give.next_page")));
+            inventory.setItem(NEXT_PAGE_SLOT, createControlButton(Material.ARROW,
+                plugin.getLanguageManager().get("gui.projecte_give.next_page")));
         }
 
         player.openInventory(inventory);
@@ -227,7 +222,7 @@ public class ProjectEGiveGUI implements Listener {
         event.setCancelled(true);
 
         int slot = event.getRawSlot();
-
+        
         if (slot < 0 || slot >= 54) {
             return;
         }
@@ -247,13 +242,13 @@ public class ProjectEGiveGUI implements Listener {
         if (itemIndex < allItems.size()) {
             GiveItem giveItem = allItems.get(itemIndex);
             ItemStack item = giveItem.itemStack.clone();
-
+            
             if (event.isRightClick()) {
                 item.setAmount(64);
             } else {
                 item.setAmount(1);
             }
-
+            
             HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(item);
             if (remaining.isEmpty()) {
                 player.sendMessage("§a已获得: " + giveItem.displayName + " §7x" + item.getAmount());
@@ -273,3 +268,4 @@ public class ProjectEGiveGUI implements Listener {
         InventoryCloseEvent.getHandlerList().unregister(this);
     }
 }
+
