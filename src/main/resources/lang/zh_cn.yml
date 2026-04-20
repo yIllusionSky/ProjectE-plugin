@@ -29,11 +29,19 @@ clientside:
       search: "§b搜索物品"
       search_lore: "点击以搜索物品"
       search_lore_current: "当前搜索: {search}"
+      buy_mode: "§a购买模式"
+      buy_mode_lore: "点击切换到移除模式"
+      remove_mode: "§c移除模式"
+      remove_mode_lore: "点击切换到购买模式"
+      removed: "§7已移除"
+      removed_lore: "该物品已从已学习列表中移除"
     item_lore:
       emc_single: "§6EMC (单个): {emc}"
       emc_stack: "§6EMC (一组): {stack_emc}"
       buy_one: "§7左键点击购买 1 个"
       buy_stack: "§7右键点击购买 {amount} 个"
+      remove_shift: "§7Shift + 左键移除已学习物品"
+      remove_mode: "§7切到红石模式后点击也可移除"
     search_sign:
       line1: "请在下面输入搜索内容"
   alchemical_bag:
@@ -162,6 +170,10 @@ serverside:
     no_permission: "§c你没有权限使用此命令。"
     player_only: "§c只有玩家才能使用此命令。"
     reload_success: "§aProjectE插件已重载。"
+    resetdb:
+      start: "§e正在重置转换桌数据库..."
+      success: "§a转换桌数据库已重置并重新初始化。"
+      failed: "§c重置转换桌数据库失败，请查看后台日志。"
     gem_boots:
       disabled_for_folia: "§cFolia服务端暂时不支持自动跳跃功能。"
     set_emc:
@@ -227,6 +239,7 @@ serverside:
     help:
       header: "§6等价交换插件版命令帮助:"
       reload: "§b/projecte reload§f - 重载插件配置"
+      resetdb: "§b/projecte resetdb§f - 清空并重建转换桌数据库"
       setemc: "§b/projecte setemc <value>§f - 设置手中物品的EMC值"
       pay: "§b/projecte pay <player> <amount>§f - 将EMC转账给其他玩家"
       item: "§b/projecte item <item_id> [amount]§f - 获取一个插件物品"
@@ -249,6 +262,8 @@ serverside:
       sell_success: "§a成功卖出物品，获得 {emc} EMC。"
       no_emc_value_learn: "§c物品 {item} 没有EMC值，无法学习。"
       learn_success: "§a成功学习新物品！"
+      remove_learned_success: "§a已移除已学习物品: {item}"
+      remove_learned_failed: "§c移除已学习物品失败: {item}"
       interact_with_map_art_fail: "§c由于Little_100的能力...他没有办法...所以请你与边缘位置交互qwp...?"
       shulker_box_no_emc: "{color}潜影盒({item_id})中{item}没有EMC值！"
       multiple_klein_stars: "充能时只能放入一个克莱因之星！"

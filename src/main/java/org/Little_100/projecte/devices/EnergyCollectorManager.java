@@ -1,5 +1,7 @@
 package org.Little_100.projecte.devices;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -7,9 +9,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class EnergyCollectorManager {
 
@@ -43,17 +42,16 @@ public class EnergyCollectorManager {
         CollectorData data = new CollectorData(ownerUUID, armorStandUUID, type);
 
         long savedEmc = plugin.getDatabaseManager().loadCollectorEmc(locationKey);
-        ItemStack[] savedInventory = plugin.getDatabaseManager().loadCollectorInventory(
-                locationKey, EnergyCollector.getInventorySize(type));
+        ItemStack[] savedInventory =
+                plugin.getDatabaseManager().loadCollectorInventory(locationKey, EnergyCollector.getInventorySize(type));
 
         data.storedEmc = savedEmc;
         data.inventory = savedInventory;
 
         collectors.put(locationKey, data);
-        
+
         // 立即保存初始数据到数据库
-        plugin.getDatabaseManager().saveCollectorData(
-                locationKey, ownerUUID, type, data.storedEmc, data.inventory);
+        plugin.getDatabaseManager().saveCollectorData(locationKey, ownerUUID, type, data.storedEmc, data.inventory);
     }
 
     public void removeCollector(Location location) {
@@ -61,8 +59,8 @@ public class EnergyCollectorManager {
         CollectorData data = collectors.remove(locationKey);
 
         if (data != null) {
-            plugin.getDatabaseManager().saveCollectorData(
-                    locationKey, data.ownerUUID, data.type, data.storedEmc, data.inventory);
+            plugin.getDatabaseManager()
+                    .saveCollectorData(locationKey, data.ownerUUID, data.type, data.storedEmc, data.inventory);
         }
 
         plugin.getDatabaseManager().deleteCollectorData(locationKey);
@@ -78,8 +76,8 @@ public class EnergyCollectorManager {
             if (owner != null) {
                 data = new CollectorData(owner, null, type);
                 data.storedEmc = plugin.getDatabaseManager().loadCollectorEmc(locationKey);
-                data.inventory = plugin.getDatabaseManager().loadCollectorInventory(
-                        locationKey, EnergyCollector.getInventorySize(type));
+                data.inventory = plugin.getDatabaseManager()
+                        .loadCollectorInventory(locationKey, EnergyCollector.getInventorySize(type));
                 collectors.put(locationKey, data);
             } else {
                 return;
@@ -102,8 +100,8 @@ public class EnergyCollectorManager {
                 data.storedEmc = storedEmc;
                 data.inventory = inventory;
 
-                plugin.getDatabaseManager().saveCollectorData(
-                        locationKey, data.ownerUUID, data.type, storedEmc, inventory);
+                plugin.getDatabaseManager()
+                        .saveCollectorData(locationKey, data.ownerUUID, data.type, storedEmc, inventory);
             }
         }
     }
@@ -113,52 +111,60 @@ public class EnergyCollectorManager {
     }
 
     private void startEmcGeneration() {
-        plugin.getSchedulerAdapter().runTimer(() -> {
-            for (Map.Entry<String, CollectorData> entry : collectors.entrySet()) {
-                String locationKey = entry.getKey();
-                CollectorData data = entry.getValue();
+        plugin.getSchedulerAdapter()
+                .runTimer(
+                        () -> {
+                            for (Map.Entry<String, CollectorData> entry : collectors.entrySet()) {
+                                String locationKey = entry.getKey();
+                                CollectorData data = entry.getValue();
 
-                try {
-                    Location location = parseLocationKey(locationKey);
-                    if (location == null || location.getWorld() == null) {
-                        continue;
-                    }
+                                try {
+                                    Location location = parseLocationKey(locationKey);
+                                    if (location == null || location.getWorld() == null) {
+                                        continue;
+                                    }
 
-                    if (!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
-                        continue;
-                    }
-                    plugin.getSchedulerAdapter().runTaskAt(location, () -> {
-                        try {
-                            Block aboveBlock = location.getBlock().getRelative(0, 1, 0);
-                            int lightLevel = aboveBlock.getLightLevel();
+                                    if (!location.getWorld()
+                                            .isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                                        continue;
+                                    }
+                                    plugin.getSchedulerAdapter().runTaskAt(location, () -> {
+                                        try {
+                                            Block aboveBlock =
+                                                    location.getBlock().getRelative(0, 1, 0);
+                                            int lightLevel = aboveBlock.getLightLevel();
 
-                            long baseEmcRate = EnergyCollector.getEmcRate(data.type);
-                            double lightMultiplier = Math.max(0.1, lightLevel / 15.0);
-                            long emcGenerated = (long) (baseEmcRate * lightMultiplier);
-                            data.storedEmc += emcGenerated;
+                                            long baseEmcRate = EnergyCollector.getEmcRate(data.type);
+                                            double lightMultiplier = Math.max(0.1, lightLevel / 15.0);
+                                            long emcGenerated = (long) (baseEmcRate * lightMultiplier);
+                                            data.storedEmc += emcGenerated;
 
-                            transferEmcToAdjacentCondensers(location, data);
+                                            transferEmcToAdjacentCondensers(location, data);
 
-                            processItemUpgrades(data);
-                        } catch (Exception e) {
-                            plugin.getLogger().warning(
-                                    "Error generating EMC for collector at " + locationKey + ": " + e.getMessage());
-                        }
-                    });
+                                            processItemUpgrades(data);
+                                        } catch (Exception e) {
+                                            plugin.getLogger()
+                                                    .warning("Error generating EMC for collector at " + locationKey
+                                                            + ": " + e.getMessage());
+                                        }
+                                    });
 
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Error processing collector at " + locationKey + ": " + e.getMessage());
-                }
-            }
+                                } catch (Exception e) {
+                                    plugin.getLogger()
+                                            .warning("Error processing collector at " + locationKey + ": "
+                                                    + e.getMessage());
+                                }
+                            }
 
-            if (System.currentTimeMillis() % 60000 < 1000) {
-                saveAllCollectors();
-            }
-        }, 20L, 20L);
+                            if (System.currentTimeMillis() % 60000 < 1000) {
+                                saveAllCollectors();
+                            }
+                        },
+                        20L,
+                        20L);
     }
 
-    private void processItemUpgrades(CollectorData data) {
-    }
+    private void processItemUpgrades(CollectorData data) {}
 
     private void transferEmcToAdjacentCondensers(Location location, CollectorData data) {
         if (data.storedEmc <= 0) {
@@ -168,9 +174,9 @@ public class EnergyCollectorManager {
         Block block = location.getBlock();
 
         BlockFace[] faces = {
-                BlockFace.NORTH, BlockFace.SOUTH,
-                BlockFace.EAST, BlockFace.WEST,
-                BlockFace.UP, BlockFace.DOWN
+            BlockFace.NORTH, BlockFace.SOUTH,
+            BlockFace.EAST, BlockFace.WEST,
+            BlockFace.UP, BlockFace.DOWN
         };
 
         List<CondenserManager.CondenserState> transferTarget = new ArrayList<>();
@@ -181,8 +187,8 @@ public class EnergyCollectorManager {
             if (adjacent.getType() == Material.BEACON) {
                 Location adjacentLocation = adjacent.getLocation();
 
-                CondenserManager.CondenserState condenserState = plugin.getCondenserManager()
-                        .getCondenserState(adjacentLocation);
+                CondenserManager.CondenserState condenserState =
+                        plugin.getCondenserManager().getCondenserState(adjacentLocation);
 
                 if (condenserState != null) {
                     transferTarget.add(condenserState);
@@ -210,8 +216,8 @@ public class EnergyCollectorManager {
             String locationKey = entry.getKey();
             CollectorData data = entry.getValue();
 
-            plugin.getDatabaseManager().saveCollectorData(
-                    locationKey, data.ownerUUID, data.type, data.storedEmc, data.inventory);
+            plugin.getDatabaseManager()
+                    .saveCollectorData(locationKey, data.ownerUUID, data.type, data.storedEmc, data.inventory);
         }
     }
 
@@ -221,11 +227,23 @@ public class EnergyCollectorManager {
                 .info("Energy Collector Manager shutdown complete. Saved " + collectors.size() + " collectors.");
     }
 
+    public void resetPersistentData() {
+        openCollectors.clear();
+
+        for (Map.Entry<String, CollectorData> entry : collectors.entrySet()) {
+            CollectorData data = entry.getValue();
+            data.storedEmc = 0;
+            data.inventory = new ItemStack[EnergyCollector.getInventorySize(data.type)];
+
+            plugin.getDatabaseManager()
+                    .saveCollectorData(entry.getKey(), data.ownerUUID, data.type, data.storedEmc, data.inventory);
+        }
+    }
+
     public static String getLocationKey(Location location) {
-        return location.getWorld().getName() + "," +
-                location.getBlockX() + "," +
-                location.getBlockY() + "," +
-                location.getBlockZ();
+        return location.getWorld().getName() + "," + location.getBlockX()
+                + "," + location.getBlockY()
+                + "," + location.getBlockZ();
     }
 
     private Location parseLocationKey(String locationKey) {

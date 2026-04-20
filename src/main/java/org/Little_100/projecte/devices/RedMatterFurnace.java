@@ -1,5 +1,6 @@
 package org.Little_100.projecte.devices;
 
+import java.util.Collections;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.util.CustomModelDataUtil;
 import org.bukkit.Material;
@@ -8,8 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-
-import java.util.Collections;
 
 public class RedMatterFurnace implements Listener {
 

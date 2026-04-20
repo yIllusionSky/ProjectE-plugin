@@ -1,5 +1,7 @@
 package org.Little_100.projecte.devices;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.util.CustomModelDataUtil;
 import org.bukkit.Material;
@@ -8,10 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class EnergyCollector implements Listener {
     public static final NamespacedKey KEY_MK1 = new NamespacedKey(ProjectE.getInstance(), "energy_collector_mk1");

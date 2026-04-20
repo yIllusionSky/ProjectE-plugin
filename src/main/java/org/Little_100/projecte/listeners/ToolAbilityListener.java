@@ -1,11 +1,12 @@
 package org.Little_100.projecte.listeners;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.tools.ToolManager;
 import org.Little_100.projecte.util.Constants;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,9 +21,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class ToolAbilityListener implements Listener {
 
@@ -125,7 +123,7 @@ public class ToolAbilityListener implements Listener {
 
     private void handleKatarRightClickAir(Player player, ItemStack katar) {
         plugin.getLogger().info("[DEBUG] handleKatarRightClickAir被调用 - 开始处理攻击");
-        
+
         long now = System.currentTimeMillis();
         long lastUsed = swordCooldowns.getOrDefault(player.getUniqueId(), 0L);
 
@@ -138,7 +136,7 @@ public class ToolAbilityListener implements Listener {
             plugin.getLogger().info("[DEBUG] 拳剑没有meta，跳过");
             return;
         }
-        
+
         ItemMeta meta = katar.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
         int currentMode = container.getOrDefault(Constants.KATAR_MODE_KEY, PersistentDataType.INTEGER, 0);
@@ -176,7 +174,7 @@ public class ToolAbilityListener implements Listener {
                 .collect(Collectors.toList());
 
         plugin.getLogger().info("[DEBUG] 找到目标数量: " + targets.size());
-        
+
         // 如果没有目标，不执行攻击
         if (targets.isEmpty()) {
             plugin.getLogger().info("[DEBUG] 没有目标，直接返回");
