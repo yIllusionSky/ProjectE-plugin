@@ -1,5 +1,7 @@
 package org.Little_100.projecte.alchemicalbag;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.managers.LanguageManager;
 import org.bukkit.Bukkit;
@@ -14,9 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class AlchemicalBagManager implements Listener {
 

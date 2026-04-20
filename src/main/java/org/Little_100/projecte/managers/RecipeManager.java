@@ -1,5 +1,10 @@
 package org.Little_100.projecte.managers;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.Little_100.projecte.Debug;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.alchemicalbag.AlchemicalBagManager;
@@ -11,12 +16,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 public class RecipeManager {
 
@@ -180,8 +179,11 @@ public class RecipeManager {
                                     .info("[Debug] Recipe " + id + ": ingredient " + keyChar + " = " + ingredientValue);
                         }
                     } catch (IllegalArgumentException e) {
-                        plugin.getLogger().severe("ERROR in recipe '" + id + "': Character '" + keyChar + 
-                            "' does not appear in shape " + java.util.Arrays.toString(config.getStringList("shape").toArray()));
+                        plugin.getLogger()
+                                .severe("ERROR in recipe '" + id + "': Character '" + keyChar
+                                        + "' does not appear in shape "
+                                        + java.util.Arrays.toString(
+                                                config.getStringList("shape").toArray()));
                         plugin.getLogger().severe("Recipe shape: " + config.getStringList("shape"));
                         plugin.getLogger().severe("Trying to set ingredient: " + keyChar + " = " + ingredientValue);
                         throw e; // 重新抛出异常以停止加载
@@ -366,14 +368,11 @@ public class RecipeManager {
         boolean aeternalisToMobiusExists = recipeKeys.containsKey("aeternalis_to_mobius");
         boolean mobiusToAlchemicalExists = recipeKeys.containsKey("mobius_to_alchemical");
         boolean alchemicalToCoalExists = recipeKeys.containsKey("alchemical_to_coal");
-        
+
         String[] wrongRecipeIds = {
-            "aeternalis_to_alchemical",
-            "aeternalis_to_coal", 
-            "wrong_aeternalis_recipe",
-            "aeternalis_downgrade"
+            "aeternalis_to_alchemical", "aeternalis_to_coal", "wrong_aeternalis_recipe", "aeternalis_downgrade"
         };
-        
+
         for (String wrongId : wrongRecipeIds) {
             if (recipeKeys.containsKey(wrongId)) {
                 NamespacedKey wrongKey = recipeKeys.get(wrongId);
@@ -382,21 +381,21 @@ public class RecipeManager {
                 plugin.getLogger().warning("已删除错误的燃料配方: " + wrongId);
             }
         }
-        
+
         Iterator<Recipe> it = Bukkit.recipeIterator();
         while (it.hasNext()) {
             Recipe recipe = it.next();
             NamespacedKey key = null;
-            
+
             if (recipe instanceof Keyed) {
                 key = ((Keyed) recipe).getKey();
             }
-            
-            if (key != null && 
-                key.getNamespace().equals(plugin.getName().toLowerCase()) && 
-                key.getKey().contains("aeternalis") && 
-                key.getKey().contains("alchemical") &&
-                !key.getKey().equals("aeternalis_to_mobius")) {
+
+            if (key != null
+                    && key.getNamespace().equals(plugin.getName().toLowerCase())
+                    && key.getKey().contains("aeternalis")
+                    && key.getKey().contains("alchemical")
+                    && !key.getKey().equals("aeternalis_to_mobius")) {
                 it.remove();
                 plugin.getLogger().warning("删除了错误的燃料配方: " + key.toString());
             }
@@ -404,7 +403,7 @@ public class RecipeManager {
 
         // 验证并确保正确的燃料配方链
         validateFuelRecipeChain();
-        
+
         // 只有在recipe.yml中对应的配方未成功注册时才使用代码注册
         if (!alchemicalCoalExists) {
             registerFuelUpgradeRecipe(
@@ -758,18 +757,18 @@ public class RecipeManager {
                 return -1;
         }
     }
-    
+
     private void validateFuelRecipeChain() {
         plugin.getLogger().info("验证燃料配方链...");
         String[] correctRecipes = {
             "alchemical_coal",
-            "mobius_fuel", 
+            "mobius_fuel",
             "aeternalis_fuel",
             "aeternalis_to_mobius",
             "mobius_to_alchemical",
             "alchemical_to_coal"
         };
-        
+
         for (String recipeId : correctRecipes) {
             if (recipeKeys.containsKey(recipeId)) {
                 plugin.getLogger().info("✓ 燃料配方存在: " + recipeId);
@@ -777,7 +776,7 @@ public class RecipeManager {
                 plugin.getLogger().warning("✗ 燃料配方缺失: " + recipeId);
             }
         }
-        
+
         plugin.getLogger().info("燃料配方链验证完成");
     }
 }

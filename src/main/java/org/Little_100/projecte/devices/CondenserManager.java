@@ -1,5 +1,7 @@
 package org.Little_100.projecte.devices;
 
+import java.io.InputStreamReader;
+import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,9 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.io.InputStreamReader;
-import java.util.*;
 
 public class CondenserManager {
 
@@ -215,10 +214,10 @@ public class CondenserManager {
 
         CondenserState state = new CondenserState(owner, inventory, type, armorStandId);
         activeCondensers.put(location, state);
-        
+
         // 立即保存初始数据到数据库
-        plugin.getDatabaseManager().saveCondenserData(
-                locationKey, owner, type.ordinal(), inventory.getContents(), savedTarget, savedEmc);
+        plugin.getDatabaseManager()
+                .saveCondenserData(locationKey, owner, type.ordinal(), inventory.getContents(), savedTarget, savedEmc);
     }
 
     public void removeCondenser(Location location) {
@@ -241,22 +240,23 @@ public class CondenserManager {
 
     public void openCondenserGUI(Player player, Location location) {
         CondenserState state = getCondenserState(location);
-        
+
         // 如果内存中没有数据，尝试从数据库加载
         if (state == null) {
             String locationKey = getLocationKey(location);
             UUID owner = plugin.getDatabaseManager().getCondenserOwner(locationKey);
             if (owner != null) {
                 int typeOrdinal = plugin.getDatabaseManager().loadCondenserType(locationKey);
-                CondenserType type = (typeOrdinal == 1) ? CondenserType.ENERGY_CONDENSER : CondenserType.ENERGY_CONDENSER_MK2;
-                
+                CondenserType type =
+                        (typeOrdinal == 1) ? CondenserType.ENERGY_CONDENSER : CondenserType.ENERGY_CONDENSER_MK2;
+
                 addCondenser(location, owner, type, null);
                 state = getCondenserState(location);
             } else {
                 return;
             }
         }
-        
+
         if (state != null) {
             player.openInventory(state.getInventory());
         }
@@ -272,6 +272,37 @@ public class CondenserManager {
 
     public Integer getTargetSlotIndex(CondenserType type) {
         return targetSlot.get(type);
+    }
+
+    public void resetPersistentData() {
+        activeCondensers.forEach((location, state) -> {
+            Inventory inventory = state.getInventory();
+            inventory.clear();
+
+            ItemStack[] layout = guiLayouts.get(state.getType());
+            if (layout != null) {
+                for (int i = 0; i < layout.length; i++) {
+                    ItemStack layoutItem = layout[i];
+                    if (layoutItem == null) {
+                        continue;
+                    }
+
+                    inventory.setItem(i, layoutItem.getType() == Material.BARRIER ? null : layoutItem.clone());
+                }
+            }
+
+            state.setStoredEmc(0);
+            state.setProgress(0);
+
+            plugin.getDatabaseManager()
+                    .saveCondenserData(
+                            getLocationKey(location),
+                            state.getOwner(),
+                            state.getType().ordinal(),
+                            inventory.getContents(),
+                            null,
+                            0);
+        });
     }
 
     private void tick(Location location, CondenserState state) {
@@ -436,6 +467,7 @@ public class CondenserManager {
     }
 
     private String getLocationKey(Location location) {
-        return location.getWorld().getName() + "," + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ();
+        return location.getWorld().getName() + "," + location.getBlockX() + "," + location.getBlockY() + ","
+                + location.getBlockZ();
     }
 }

@@ -1,10 +1,10 @@
 package org.Little_100.projecte.listeners;
 
 import org.Little_100.projecte.ProjectE;
-import org.Little_100.projecte.util.InventoryViewHelper;
 import org.Little_100.projecte.gui.ToolChargeGUI;
 import org.Little_100.projecte.tools.ToolManager;
 import org.Little_100.projecte.util.Constants;
+import org.Little_100.projecte.util.InventoryViewHelper;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,7 +37,8 @@ public class ToolChargeGUIListener implements Listener {
 
         String expectedTitle = plugin.getLanguageManager().get("clientside.tool_charge_gui.title");
         if (plugin.getConfig().getBoolean("debug")) {
-            plugin.getLogger().info("[DEBUG] GUI点击事件触发，标题: " + InventoryViewHelper.getTitle(event) + ", 期望: " + expectedTitle);
+            plugin.getLogger()
+                    .info("[DEBUG] GUI点击事件触发，标题: " + InventoryViewHelper.getTitle(event) + ", 期望: " + expectedTitle);
         }
         if (!InventoryViewHelper.getTitle(event).equals(expectedTitle)) {
             return;
@@ -59,7 +60,7 @@ public class ToolChargeGUIListener implements Listener {
             plugin.getLogger().info("[DEBUG] 点击的物品meta keys: " + clickedContainer.getKeys());
             plugin.getLogger().info("[DEBUG] 手持工具: " + (tool != null ? tool.getType() : "null"));
         }
-        
+
         if (!toolManager.isProjectETool(tool)) {
             if (plugin.getConfig().getBoolean("debug")) {
                 plugin.getLogger().info("[DEBUG] 手持物品不是ProjectE工具，跳过");
@@ -110,10 +111,12 @@ public class ToolChargeGUIListener implements Listener {
         }
 
         if (plugin.getConfig().getBoolean("debug")) {
-            plugin.getLogger().info("[DEBUG] 检查是否有KATAR_MODE_KEY: " + clickedContainer.has(Constants.KATAR_MODE_KEY, PersistentDataType.INTEGER));
+            plugin.getLogger()
+                    .info("[DEBUG] 检查是否有KATAR_MODE_KEY: "
+                            + clickedContainer.has(Constants.KATAR_MODE_KEY, PersistentDataType.INTEGER));
             plugin.getLogger().info("[DEBUG] 是否是拳剑: " + toolManager.isRedMatterKatar(tool));
         }
-        
+
         if (clickedContainer.has(Constants.KATAR_MODE_KEY, PersistentDataType.INTEGER)) {
             if (plugin.getConfig().getBoolean("debug")) {
                 plugin.getLogger().info("[DEBUG] 检测到拳剑模式切换点击");
@@ -134,13 +137,14 @@ public class ToolChargeGUIListener implements Listener {
                 toolManager.updateKatarAttackDamage(tool);
 
                 player.getInventory().setItemInMainHand(tool);
-                
+
                 // 发送模式切换确认消息
-                String modeName = (newMode == 0) 
-                    ? plugin.getLanguageManager().get("clientside.red_matter_katar.mode_all")
-                    : plugin.getLanguageManager().get("clientside.red_matter_katar.mode_hostile");
-                player.sendMessage(plugin.getLanguageManager().get("clientside.red_matter_katar.mode_prefix") + " " + modeName);
-                
+                String modeName = (newMode == 0)
+                        ? plugin.getLanguageManager().get("clientside.red_matter_katar.mode_all")
+                        : plugin.getLanguageManager().get("clientside.red_matter_katar.mode_hostile");
+                player.sendMessage(
+                        plugin.getLanguageManager().get("clientside.red_matter_katar.mode_prefix") + " " + modeName);
+
                 // 播放切换音效
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
 

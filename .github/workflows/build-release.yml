@@ -1,0 +1,86 @@
+name: Build And Release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build plugin
+        run: ./gradlew build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: projecte-plugin-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from gradle.properties
+        id: version
+        shell: bash
+        run: |
+          version="$(grep '^version=' gradle.properties | cut -d'=' -f2- | tr -d '\r')"
+          if [ -z "$version" ]; then
+            echo "Failed to read version from gradle.properties" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag matches gradle.properties
+        shell: bash
+        run: |
+          expected_tag="v${{ steps.version.outputs.version }}"
+          actual_tag="${GITHUB_REF#refs/tags/}"
+
+          if [ "$expected_tag" != "$actual_tag" ]; then
+            echo "Tag $actual_tag does not match gradle.properties version ${{ steps.version.outputs.version }}" >&2
+            exit 1
+          fi
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: projecte-plugin-jar
+          path: dist
+
+      - name: Create or update release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: dist/*.jar
+          artifactErrorsFailBuild: true
+          generateReleaseNotes: true
+          name: ProjectE v${{ steps.version.outputs.version }}
+          tag: v${{ steps.version.outputs.version }}

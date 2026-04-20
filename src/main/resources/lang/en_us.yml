@@ -31,11 +31,19 @@ clientside:
       search: "§bSearch Items"
       search_lore: "Click to search for items"
       search_lore_current: "Current search: {search}"
+      buy_mode: "§aBuy Mode"
+      buy_mode_lore: "Click to switch to remove mode"
+      remove_mode: "§cRemove Mode"
+      remove_mode_lore: "Click to switch to buy mode"
+      removed: "§7Removed"
+      removed_lore: "This item has been removed from your learned list"
     item_lore:
       emc_single: "§6EMC (Single): {emc}"
       emc_stack: "§6EMC (Stack): {stack_emc}"
       buy_one: "§7Left-click to buy 1"
       buy_stack: "§7Right-click to buy {amount}"
+      remove_shift: "§7Shift + Left-click to remove the learned item"
+      remove_mode: "§7You can also remove it in redstone mode"
     search_sign:
       line1: "Enter search term below"
   alchemical_bag:
@@ -164,6 +172,10 @@ serverside:
     no_permission: "§cYou do not have permission to use this command."
     player_only: "§cOnly players can use this command."
     reload_success: "§aProjectE plugin has been reloaded."
+    resetdb:
+      start: "§eResetting the transmutation database..."
+      success: "§aThe transmutation database has been reset and reinitialized."
+      failed: "§cFailed to reset the transmutation database. Check the server log."
     gem_boots:
       disabled_for_folia: "§cFolia server does not support auto-step feature currently."
     set_emc:
@@ -229,6 +241,7 @@ serverside:
     help:
       header: "§6ProjectE Plugin Command Help:"
       reload: "§b/projecte reload§f - Reloads the plugin configuration"
+      resetdb: "§b/projecte resetdb§f - Clears and rebuilds the transmutation database"
       setemc: "§b/projecte setemc <value>§f - Sets the EMC value for the item in hand"
       pay: "§b/projecte pay <player> <amount>§f - Pays EMC to another player"
       item: "§b/projecte item <item_id> [amount]§f - Gets a plugin item"
@@ -251,6 +264,8 @@ serverside:
       sell_success: "§aSuccessfully sold items for {emc} EMC."
       no_emc_value_learn: "§cItem {item} has no EMC value and cannot be learned."
       learn_success: "§aSuccessfully learned new items!"
+      remove_learned_success: "§aRemoved learned item: {item}"
+      remove_learned_failed: "§cFailed to remove learned item: {item}"
       interact_with_map_art_fail: "§cBecause of Little_100's ability...he cannot resolve cross itemframe interaction...so please interact with edge positions qwp..."
       shulker_box_no_emc: "{color}Shulker({item_id}) {item} has no EMC"
       multiple_klein_stars: "When you have multiple Klein Stars, you can only use one at a time."

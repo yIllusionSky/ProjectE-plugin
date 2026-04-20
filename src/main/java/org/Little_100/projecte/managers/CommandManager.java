@@ -1,5 +1,7 @@
 package org.Little_100.projecte.managers;
 
+import java.io.File;
+import java.util.*;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.gui.GemHelmetGUI;
 import org.Little_100.projecte.gui.NoEmcItemGUI;
@@ -28,24 +30,25 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.StringUtil;
 import org.geysermc.geyser.api.GeyserApi;
 
-import java.io.File;
-import java.util.*;
-
 public class CommandManager implements CommandExecutor, TabCompleter {
 
     private final ProjectE plugin;
     private final Map<String, Map<String, String>> openTableCommands = new HashMap<>();
     private final Map<Player, String> openGuiEditors = new HashMap<>();
-    private final DatabaseManager databaseManager;
-    private final EmcManager emcManager;
-    private final LanguageManager languageManager;
+    private DatabaseManager databaseManager;
+    private EmcManager emcManager;
+    private LanguageManager languageManager;
 
     public CommandManager(ProjectE plugin) {
         this.plugin = plugin;
+        refreshManagers();
+        loadCommands();
+    }
+
+    private void refreshManagers() {
         this.databaseManager = plugin.getDatabaseManager();
         this.emcManager = plugin.getEmcManager();
         this.languageManager = plugin.getLanguageManager();
-        loadCommands();
     }
 
     private void loadCommands() {
@@ -106,6 +109,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                     break;
                 case "reload":
                     handleReload(sender);
+                    break;
+                case "resetdb":
+                    handleResetDb(sender);
                     break;
                 case "setemc":
                     handleSetEmc(sender, args);
@@ -227,13 +233,13 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                     emcManager.calculateAndStoreEmcValues(true);
                     sender.sendMessage(ChatColor.GREEN + "所有物品EMC计算完成！");
                     break;
-                    
+
                 case "default":
                     sender.sendMessage(ChatColor.GREEN + "开始重新计算原版物品的EMC...");
                     emcManager.recalculateDefaultEmcValues();
                     sender.sendMessage(ChatColor.GREEN + "原版物品EMC计算完成！");
                     break;
-                    
+
                 case "pdc":
                     sender.sendMessage(ChatColor.GREEN + "开始重新计算PDC物品的EMC...");
                     int calculated = emcManager.recalculatePdcEmcValues();
@@ -265,6 +271,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(languageManager.get("serverside.command.help.header"));
         sender.sendMessage(languageManager.get("serverside.command.help.reload"));
+        sender.sendMessage(languageManager.get("serverside.command.help.resetdb"));
         sender.sendMessage(languageManager.get("serverside.command.help.setemc"));
         sender.sendMessage(languageManager.get("serverside.command.help.pay"));
         sender.sendMessage(languageManager.get("serverside.command.help.item"));
@@ -286,7 +293,24 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         plugin.reloadPlugin();
+        refreshManagers();
         sender.sendMessage(languageManager.get("serverside.command.reload_success"));
+    }
+
+    private void handleResetDb(CommandSender sender) {
+        if (!sender.hasPermission("projecte.command.resetdb")) {
+            sender.sendMessage(languageManager.get("serverside.command.no_permission"));
+            return;
+        }
+
+        sender.sendMessage(languageManager.get("serverside.command.resetdb.start"));
+        if (!plugin.resetTransmutationDatabase()) {
+            sender.sendMessage(languageManager.get("serverside.command.resetdb.failed"));
+            return;
+        }
+
+        refreshManagers();
+        sender.sendMessage(languageManager.get("serverside.command.resetdb.success"));
     }
 
     private void handleSetEmc(CommandSender sender, String[] args) {
@@ -463,7 +487,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         targetPlayer.sendMessage(languageManager.get("serverside.command.pay_emc.receive_success", targetPlaceholders));
     }
 
-
     private void handleGiveItem(CommandSender sender, String[] args) {
         if (!sender.hasPermission("projecte.command.give")) {
             sender.sendMessage(languageManager.get("serverside.command.no_permission"));
@@ -476,7 +499,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 return;
             }
             Player player = (Player) sender;
-            org.Little_100.projecte.gui.ProjectEGiveGUI gui = new org.Little_100.projecte.gui.ProjectEGiveGUI(plugin, player);
+            org.Little_100.projecte.gui.ProjectEGiveGUI gui =
+                    new org.Little_100.projecte.gui.ProjectEGiveGUI(plugin, player);
             gui.open();
             return;
         }
@@ -537,7 +561,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         sender.sendMessage(ChatColor.YELLOW + "正在查询没有EMC值的物品,请稍候...");
-        
+
         // 异步执行以避免阻塞主线程
         plugin.getSchedulerAdapter().runTaskAsynchronously(() -> {
             List<ItemStack> noEmcItems = new ArrayList<>();
@@ -860,7 +884,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return;
         }
 
-        org.Little_100.projecte.gui.PdcItemDebugGUI gui = new org.Little_100.projecte.gui.PdcItemDebugGUI(plugin, player);
+        org.Little_100.projecte.gui.PdcItemDebugGUI gui =
+                new org.Little_100.projecte.gui.PdcItemDebugGUI(plugin, player);
         plugin.getPdcItemDebugGUIListener().registerGui(player, gui);
         gui.open();
     }
@@ -879,7 +904,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 List<String> types = Arrays.asList("all", "default", "pdc");
                 return StringUtil.copyPartialMatches(args[1], types, new ArrayList<>());
             }
-            
+
             if (args[0].equalsIgnoreCase("give")) {
                 List<String> options = new ArrayList<>();
                 options.add("gui");
@@ -888,7 +913,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 }
                 return StringUtil.copyPartialMatches(args[1], options, new ArrayList<>());
             }
-            
+
             if (args[0].equalsIgnoreCase("pay")) {
                 List<String> playerNames = new ArrayList<>();
                 for (Player player : Bukkit.getOnlinePlayers()) {
@@ -896,7 +921,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 }
                 return StringUtil.copyPartialMatches(args[1], playerNames, new ArrayList<>());
             }
-
 
             if (args[0].equalsIgnoreCase("bag")) {
                 return StringUtil.copyPartialMatches(args[1], Collections.singletonList("list"), new ArrayList<>());
@@ -960,6 +984,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         return new ArrayList<>(Arrays.asList(
                 "recalculate",
                 "reload",
+                "resetdb",
                 "setemc",
                 "debug",
                 "pay",
