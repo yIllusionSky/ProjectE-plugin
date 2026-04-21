@@ -1,5 +1,8 @@
 package org.Little_100.projecte.gui;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import org.Little_100.projecte.Debug;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.managers.EmcManager;
@@ -7,7 +10,6 @@ import org.Little_100.projecte.managers.LanguageManager;
 import org.Little_100.projecte.storage.DatabaseManager;
 import org.Little_100.projecte.tools.kleinstar.KleinStarManager;
 import org.Little_100.projecte.util.ShulkerBoxUtil;
-import org.bukkit.World;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -22,10 +24,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GUIListener implements Listener {
 
@@ -233,6 +231,9 @@ public class GUIListener implements Listener {
                 gui.setPage(gui.getPage() - 1);
             }
             return;
+        } else if (slot == 49) {
+            gui.toggleRemoveMode();
+            return;
         } else if (slot == 50) {
             gui.setPage(gui.getPage() + 1);
             return;
@@ -247,6 +248,12 @@ public class GUIListener implements Listener {
             String itemKey = ProjectE.getInstance().getEmcManager().getItemKey(clickedItem);
             long itemEmc = ProjectE.getInstance().getEmcManager().getEmc(itemKey);
             if (itemEmc <= 0) return;
+
+            boolean removeRequested = gui.isRemoveMode();
+            if (removeRequested) {
+                handleRemoveLearnedItem(player, gui, slot, clickedItem, itemKey);
+                return;
+            }
 
             long playerEmc = ProjectE.getInstance().getDatabaseManager().getPlayerEmc(player.getUniqueId());
             int amountToBuy;
@@ -266,10 +273,10 @@ public class GUIListener implements Listener {
                 totalCost = itemEmc;
             } else {
                 // 对于其他物品，根据点击类型决定购买数量
-                if (event.isLeftClick()) {
+                if (event.isLeftClick() && !event.isShiftClick()) {
                     amountToBuy = 1;
                     totalCost = itemEmc;
-                } else if (event.isRightClick()) {
+                } else if (event.isRightClick() && !event.isShiftClick()) {
                     amountToBuy = clickedItem.getMaxStackSize();
                     totalCost = itemEmc * amountToBuy;
                 } else {
@@ -293,7 +300,8 @@ public class GUIListener implements Listener {
                         }
                     }
 
-                    HashMap<Integer, ItemStack> remainingItems = player.getInventory().addItem(purchasedItem);
+                    HashMap<Integer, ItemStack> remainingItems =
+                            player.getInventory().addItem(purchasedItem);
                     if (!remainingItems.isEmpty()) {
                         for (ItemStack remaining : remainingItems.values()) {
                             player.getWorld().dropItemNaturally(player.getLocation(), remaining);
@@ -312,8 +320,7 @@ public class GUIListener implements Listener {
                     placeholders.put("amount", String.valueOf(amountToBuy));
                     placeholders.put("item", displayName);
                     player.sendMessage(lang.get("serverside.command.generic.buy_success", placeholders));
-
-                    refreshGui(player, gui);
+                    reopenBuyTransmutationGui(player, gui);
 
                 } else {
                     player.sendMessage(ProjectE.getInstance()
@@ -357,7 +364,8 @@ public class GUIListener implements Listener {
                                             : itemWithoutEmc.getType().name());
                             player.sendMessage(lang.get("serverside.command.generic.shulker_box_no_emc", placeholders));
 
-                            HashMap<Integer, ItemStack> remainingItems = player.getInventory().addItem(item);
+                            HashMap<Integer, ItemStack> remainingItems =
+                                    player.getInventory().addItem(item);
                             if (!remainingItems.isEmpty()) {
                                 for (ItemStack remaining : remainingItems.values()) {
                                     player.getWorld().dropItemNaturally(player.getLocation(), remaining);
@@ -372,30 +380,10 @@ public class GUIListener implements Listener {
                     long itemEmc = calculateItemSellEmc(item);
                     if (itemEmc > 0) {
                         totalEmcChange += itemEmc;
-                        String itemKey = ProjectE.getInstance().getEmcManager().getItemKey(item);
-                        ProjectE.getInstance().getDatabaseManager().addLearnedItem(player.getUniqueId(), itemKey);
-                        // 如果是潜影盒，学习内部所有物品
-                        if (item.getItemMeta() instanceof BlockStateMeta
-                                && ((BlockStateMeta) item.getItemMeta()).getBlockState() instanceof ShulkerBox) {
-                            BlockStateMeta bsm = (BlockStateMeta) item.getItemMeta();
-                            ShulkerBox shulkerBox = (ShulkerBox) bsm.getBlockState();
-                            for (ItemStack contentItem :
-                                    shulkerBox.getInventory().getContents()) {
-                                if (contentItem != null
-                                        && !contentItem.getType().isAir()) {
-                                    ProjectE.getInstance()
-                                            .getDatabaseManager()
-                                            .addLearnedItem(
-                                                    player.getUniqueId(),
-                                                    ProjectE.getInstance()
-                                                            .getEmcManager()
-                                                            .getItemKey(contentItem));
-                                }
-                            }
-                        }
                     } else {
                         handleNoEmcItem(player, item);
-                        HashMap<Integer, ItemStack> remainingItems = player.getInventory().addItem(item);
+                        HashMap<Integer, ItemStack> remainingItems =
+                                player.getInventory().addItem(item);
                         if (!remainingItems.isEmpty()) {
                             for (ItemStack remaining : remainingItems.values()) {
                                 player.getWorld().dropItemNaturally(player.getLocation(), remaining);
@@ -431,7 +419,7 @@ public class GUIListener implements Listener {
             }
         }
 
-        refreshGui(player, gui);
+        reopenMainTransmutationGui(player);
     }
 
     private void handleLearnScreenClick(InventoryClickEvent event, TransmutationGUI gui) {
@@ -478,7 +466,6 @@ public class GUIListener implements Listener {
         for (int i = 0; i < 54; i++) {
             if (isTransactionArea(i)) {
                 ItemStack item = inventory.getItem(i);
-                World world = player.getWorld();
                 if (item != null && !item.getType().isAir()) {
                     player.getInventory().addItem(item);
                     inventory.setItem(i, null);
@@ -486,24 +473,7 @@ public class GUIListener implements Listener {
             }
         }
 
-        player.closeInventory();
-    }
-
-    private void refreshGui(Player player, TransmutationGUI oldGui) {
-        final TransmutationGUI.GuiState state = oldGui.getCurrentState();
-        final int page = oldGui.getPage();
-        final String searchQuery = oldGui.getSearchQuery();
-
-        player.closeInventory();
-        ProjectE.getInstance().getSchedulerAdapter().runTaskLater(() -> {
-            TransmutationGUI newGui = new TransmutationGUI(player);
-            newGui.setState(state);
-            newGui.setPage(page);
-            if (searchQuery != null && !searchQuery.isEmpty()) {
-                newGui.setSearchQuery(searchQuery);
-            }
-            newGui.open();
-        }, 1L);
+        reopenMainTransmutationGui(player);
     }
 
     @EventHandler
@@ -552,7 +522,8 @@ public class GUIListener implements Listener {
                 if (isTransactionArea(i)) {
                     ItemStack item = inventory.getItem(i);
                     if (item != null && !item.getType().isAir()) {
-                        HashMap<Integer, ItemStack> remainingItems = player.getInventory().addItem(item);
+                        HashMap<Integer, ItemStack> remainingItems =
+                                player.getInventory().addItem(item);
                         if (!remainingItems.isEmpty()) {
                             for (ItemStack remaining : remainingItems.values()) {
                                 player.getWorld().dropItemNaturally(player.getLocation(), remaining);
@@ -678,8 +649,7 @@ public class GUIListener implements Listener {
 
             inventory.setItem(kleinStarSlot, null);
             player.getInventory().addItem(updatedKleinStar);
-
-            refreshGui(player, gui);
+            reopenMainTransmutationGui(player);
 
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("emc", String.format("%,d", amountToCharge));
@@ -693,16 +663,51 @@ public class GUIListener implements Listener {
     private void handleNoEmcItem(Player player, ItemStack item) {
         LanguageManager lang = ProjectE.getInstance().getLanguageManager();
         Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("item", getDisplayName(item));
+        player.sendMessage(lang.get("serverside.command.generic.no_emc_value_trade", placeholders));
+    }
 
-        String displayName;
-        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
-            displayName = item.getItemMeta().getDisplayName();
-        } else {
-            displayName = item.getType().name();
+    private void handleRemoveLearnedItem(
+            Player player, TransmutationGUI gui, int slot, ItemStack clickedItem, String itemKey) {
+        LanguageManager languageManager = ProjectE.getInstance().getLanguageManager();
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("item", getDisplayName(clickedItem));
+
+        boolean removed = ProjectE.getInstance().getDatabaseManager().removeLearnedItem(player.getUniqueId(), itemKey);
+        if (!removed) {
+            player.sendMessage(languageManager.get("serverside.command.generic.remove_learned_failed", placeholders));
+            return;
         }
 
-        placeholders.put("item", displayName);
-        player.sendMessage(lang.get("serverside.command.generic.no_emc_value_trade", placeholders));
+        gui.invalidateBuySlot(slot);
+        player.sendMessage(languageManager.get("serverside.command.generic.remove_learned_success", placeholders));
+    }
+
+    private String getDisplayName(ItemStack item) {
+        if (item != null && item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            return item.getItemMeta().getDisplayName();
+        }
+        return item != null ? item.getType().name() : "UNKNOWN";
+    }
+
+    private void reopenMainTransmutationGui(Player player) {
+        ProjectE.getInstance().getSchedulerAdapter().runTask(() -> new TransmutationGUI(player).open());
+    }
+
+    private void reopenBuyTransmutationGui(Player player, TransmutationGUI currentGui) {
+        int currentPage = currentGui.getPage();
+        String searchQuery = currentGui.getSearchQuery();
+        ProjectE.getInstance().getSchedulerAdapter().runTask(() -> {
+            TransmutationGUI newGui = new TransmutationGUI(player);
+            newGui.setState(TransmutationGUI.GuiState.BUY);
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                newGui.setSearchQuery(searchQuery);
+            }
+            if (currentPage > 0) {
+                newGui.setPage(currentPage);
+            }
+            newGui.open();
+        });
     }
 
     private void returnCursorItemToPlayer(InventoryClickEvent event) {

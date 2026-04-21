@@ -1,8 +1,9 @@
 package org.Little_100.projecte.compatibility.version;
 
+import java.util.*;
+import java.util.logging.Level;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.managers.EmcManager;
-import org.Little_100.projecte.storage.DatabaseManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -12,17 +13,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 
-import java.util.*;
-import java.util.logging.Level;
-
 public class LegacyAdapter implements VersionAdapter {
 
     private EmcManager emcManager;
-    private final DatabaseManager databaseManager;
 
-    LegacyAdapter() {
-        this.databaseManager = ProjectE.getInstance().getDatabaseManager();
-    }
+    LegacyAdapter() {}
 
     private EmcManager getEmcManager() {
         if (this.emcManager == null) {
@@ -30,6 +25,10 @@ public class LegacyAdapter implements VersionAdapter {
         }
 
         return this.emcManager;
+    }
+
+    private org.Little_100.projecte.storage.DatabaseManager getDatabaseManager() {
+        return ProjectE.getInstance().getDatabaseManager();
     }
 
     @Override
@@ -57,12 +56,13 @@ public class LegacyAdapter implements VersionAdapter {
         boolean isCooking = false;
 
         if (recipe instanceof ShapedRecipe) {
-            for (ItemStack ingredient :
-                    ((ShapedRecipe) recipe).getIngredientMap().values()) {
+            ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
+            for (Map.Entry<Character, ItemStack> entry : shapedRecipe.getIngredientMap().entrySet()) {
+                ItemStack ingredient = entry.getValue();
                 if (ingredient == null) continue;
                 long ingredientEmc = getIngredientEmc(ingredient);
                 if (ingredientEmc == 0) return 0;
-                totalEmc += ingredientEmc;
+                totalEmc += ingredientEmc * countIngredientOccurrences(shapedRecipe.getShape(), entry.getKey());
             }
         } else if (recipe instanceof ShapelessRecipe) {
             for (ItemStack ingredient : ((ShapelessRecipe) recipe).getIngredientList()) {
@@ -99,6 +99,18 @@ public class LegacyAdapter implements VersionAdapter {
         }
 
         return recipeEmc;
+    }
+
+    private int countIngredientOccurrences(String[] shape, char ingredientKey) {
+        int count = 0;
+        for (String row : shape) {
+            for (int i = 0; i < row.length(); i++) {
+                if (row.charAt(i) == ingredientKey) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     private long getIngredientEmc(ItemStack ingredient) {
@@ -138,7 +150,7 @@ public class LegacyAdapter implements VersionAdapter {
                         long emc = ((Number) entry.getValue()).longValue();
 
                         if (getMaterial(itemKey) != null) {
-                            databaseManager.setEmc("minecraft:" + itemKey.toLowerCase(), emc, true);
+                            getDatabaseManager().setEmc("minecraft:" + itemKey.toLowerCase(), emc, true);
                         } else {
                             ProjectE.getInstance()
                                     .getLogger()
@@ -154,7 +166,7 @@ public class LegacyAdapter implements VersionAdapter {
                 }
             }
         }
-        
+
         List<Map<?, ?>> lockedItems = emcSection.getMapList("locked");
         if (lockedItems != null && !lockedItems.isEmpty()) {
             ProjectE.getInstance()
@@ -172,7 +184,8 @@ public class LegacyAdapter implements VersionAdapter {
                         if (!(entry.getValue() instanceof Number)) {
                             ProjectE.getInstance()
                                     .getLogger()
-                                    .warning("Invalid locked EMC value for '" + configKey + "': not a number. Skipping.");
+                                    .warning("Invalid locked EMC value for '" + configKey
+                                            + "': not a number. Skipping.");
                             continue;
                         }
 
@@ -184,10 +197,8 @@ public class LegacyAdapter implements VersionAdapter {
                         long emc = ((Number) entry.getValue()).longValue();
 
                         // 锁定的EMC值，不会被配方计算覆盖
-                        databaseManager.setEmc(correctItemKey, emc, true);
-                        ProjectE.getInstance()
-                                .getLogger()
-                                .info("Locked EMC for " + correctItemKey + ": " + emc);
+                        getDatabaseManager().setEmc(correctItemKey, emc, true);
+                        ProjectE.getInstance().getLogger().info("Locked EMC for " + correctItemKey + ": " + emc);
                     } catch (Exception e) {
                         ProjectE.getInstance()
                                 .getLogger()

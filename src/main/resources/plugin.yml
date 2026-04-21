@@ -19,6 +19,9 @@ permissions:
   projecte.command.reload:
     description: "允许重载插件"
     default: op
+  projecte.command.resetdb:
+    description: "允许重置转换桌数据库"
+    default: op
   projecte.command.debug:
     description: "允许调试物品的EMC信息"
     default: op

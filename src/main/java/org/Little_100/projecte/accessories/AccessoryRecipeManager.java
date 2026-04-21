@@ -1,5 +1,9 @@
 package org.Little_100.projecte.accessories;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -9,11 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AccessoryRecipeManager {
 

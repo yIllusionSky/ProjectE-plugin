@@ -29,11 +29,18 @@ clientside:
       search: "§b寻物"
       search_lore: "點此以尋物"
       search_lore_current: "今寻: {search}"
+      buy_mode: "§a購買模式"
+      buy_mode_lore: "點此切至移除模式"
+      remove_mode: "§c移除模式"
+      remove_mode_lore: "點此切至購買模式"
+      removed: "§7已移除"
+      removed_lore: "此物已自已習之列中除去"
     item_lore:
       emc_single: "§6EMC (單): {emc}"
       emc_stack: "§6EMC (疊): {stack_emc}"
       buy_one: "§7左擊購一"
       buy_stack: "§7右擊購 {amount}"
+      remove_mode: "§7切至紅石模式後點擊亦可移除"
     search_sign:
       line1: "请于下方键入欲寻之物"
   alchemical_bag:
@@ -162,6 +169,10 @@ serverside:
     no_permission: "§c君無權用此令。"
     player_only: "§c唯玩家可用此令。"
     reload_success: "§aProjectE插件已重載。"
+    resetdb:
+      start: "§e正重置轉換桌資料庫..."
+      success: "§a轉換桌資料庫已重置並重建。"
+      failed: "§c重置轉換桌資料庫失敗，請查後臺日誌。"
     gem_boots:
       disabled_for_folia: "§cFolia服务端暫不支持自動跳躍之能。"
     set_emc:
@@ -227,6 +238,7 @@ serverside:
     help:
       header: "§6等價交換插件版命令之助:"
       reload: "§b/projecte reload§f - 重載插件配置"
+      resetdb: "§b/projecte resetdb§f - 清空並重建轉換桌資料庫"
       setemc: "§b/projecte setemc <值>§f - 設置手中物品之EMC值"
       pay: "§b/projecte pay <玩家> <數額>§f - 將EMC轉予他玩家"
       item: "§b/projecte item <物品ID> [數]§f - 獲一插件物品"
@@ -249,6 +261,8 @@ serverside:
       sell_success: "§a成功沽出物品，得 {emc} EMC。"
       no_emc_value_learn: "§c物品 {item} 無EMC值，不可習得。"
       learn_success: "§a成功習得新物！"
+      remove_learned_success: "§a已移除已習之物: {item}"
+      remove_learned_failed: "§c移除已習之物失敗: {item}"
       interact_with_map_art_fail: "§c因Little_100之能...彼無法...故請汝與邊緣位置交互qwp...?"
       shulker_box_no_emc: "{color}潛影盒({item_id})中{item}無EMC值！"
       multiple_klein_stars: "充能時僅可置一克萊因之星！"
