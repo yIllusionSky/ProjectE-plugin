@@ -1,8 +1,11 @@
 package org.Little_100.projecte.listeners;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.Little_100.projecte.ProjectE;
-import org.Little_100.projecte.util.InventoryViewHelper;
 import org.Little_100.projecte.tools.DiviningRod;
+import org.Little_100.projecte.util.InventoryViewHelper;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -14,10 +17,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class DiviningRodListener implements Listener {
 
@@ -70,7 +69,8 @@ public class DiviningRodListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!InventoryViewHelper.getTitle(event).equals(plugin.getLanguageManager().get("clientside.divining_rod.gui.title"))) {
+        if (!InventoryViewHelper.getTitle(event)
+                .equals(plugin.getLanguageManager().get("clientside.divining_rod.gui.title"))) {
             return;
         }
 

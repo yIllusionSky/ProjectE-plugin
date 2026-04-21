@@ -1,5 +1,7 @@
 package org.Little_100.projecte.listeners;
 
+import java.util.HashMap;
+import java.util.logging.Level;
 import org.Little_100.projecte.Debug;
 import org.Little_100.projecte.ProjectE;
 import org.bukkit.Bukkit;
@@ -12,9 +14,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.HashMap;
-import java.util.logging.Level;
 
 public class CraftingListener implements Listener {
 
@@ -35,7 +34,7 @@ public class CraftingListener implements Listener {
 
         Player player = (Player) event.getWhoClicked();
         CraftingInventory inventory = (CraftingInventory) event.getInventory();
-        
+
         // 检查是否有贤者之石
         boolean hasPhilosopherStone = false;
         for (ItemStack item : inventory.getMatrix()) {
@@ -56,7 +55,7 @@ public class CraftingListener implements Listener {
 
         result = result.clone();
         Debug.log("贤者之石合成: " + result.getType() + " x" + result.getAmount());
-        
+
         event.setCancelled(true);
 
         if (event.isShiftClick()) {
@@ -90,9 +89,10 @@ public class CraftingListener implements Listener {
             for (ItemStack item : leftovers.values()) {
                 player.getWorld().dropItemNaturally(player.getLocation(), item);
             }
-            craftedAmount -= leftovers.values().stream().mapToInt(ItemStack::getAmount).sum();
+            craftedAmount -=
+                    leftovers.values().stream().mapToInt(ItemStack::getAmount).sum();
         }
-        
+
         int numCrafted = craftedAmount / result.getAmount();
         Debug.log("实际合成次数: " + numCrafted);
 

@@ -1,18 +1,17 @@
 package org.Little_100.projecte.util;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.Little_100.projecte.ProjectE;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import org.Little_100.projecte.ProjectE;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 
 public class MaterialStackSizeModifier {
 
     private final ProjectE plugin;
     private boolean isSetupComplete = false;
     private String serverVersion;
-    
+
     private Class<?> itemClass;
     private Class<?> itemsClass;
     private Method getItemNameMethod;
@@ -35,7 +34,7 @@ public class MaterialStackSizeModifier {
 
             // 设置NMS反射类
             setupReflectionClasses();
-            
+
             isSetupComplete = true;
             plugin.getLogger().info("MaterialStackSizeModifier 初始化成功！");
         } catch (Exception e) {
@@ -47,16 +46,16 @@ public class MaterialStackSizeModifier {
     private void setupReflectionClasses() {
         try {
             // 根据版本确定类路径
-            boolean isModern = !serverVersion.startsWith("v1_7") && 
-                              !serverVersion.startsWith("v1_8") &&
-                              !serverVersion.startsWith("v1_9") &&
-                              !serverVersion.startsWith("v1_10") &&
-                              !serverVersion.startsWith("v1_11") &&
-                              !serverVersion.startsWith("v1_12") &&
-                              !serverVersion.startsWith("v1_13") &&
-                              !serverVersion.startsWith("v1_14") &&
-                              !serverVersion.startsWith("v1_15") &&
-                              !serverVersion.startsWith("v1_16");
+            boolean isModern = !serverVersion.startsWith("v1_7")
+                    && !serverVersion.startsWith("v1_8")
+                    && !serverVersion.startsWith("v1_9")
+                    && !serverVersion.startsWith("v1_10")
+                    && !serverVersion.startsWith("v1_11")
+                    && !serverVersion.startsWith("v1_12")
+                    && !serverVersion.startsWith("v1_13")
+                    && !serverVersion.startsWith("v1_14")
+                    && !serverVersion.startsWith("v1_15")
+                    && !serverVersion.startsWith("v1_16");
 
             String itemClassPath;
             String itemsClassPath;
@@ -65,8 +64,9 @@ public class MaterialStackSizeModifier {
             if (serverVersion.equalsIgnoreCase("craftbukkit") || isModern) {
                 itemClassPath = "net.minecraft.world.item.Item";
                 itemsClassPath = "net.minecraft.world.item.Items";
-                
-                if (Bukkit.getBukkitVersion().startsWith("1.21.3") || Bukkit.getBukkitVersion().startsWith("1.21.4")) {
+
+                if (Bukkit.getBukkitVersion().startsWith("1.21.3")
+                        || Bukkit.getBukkitVersion().startsWith("1.21.4")) {
                     itemNameMethodName = "l";
                 } else if (Bukkit.getBukkitVersion().startsWith("1.17")) {
                     itemNameMethodName = "getName";
@@ -83,12 +83,12 @@ public class MaterialStackSizeModifier {
             itemClass = Class.forName(itemClassPath);
             itemsClass = Class.forName(itemsClassPath);
             getItemNameMethod = itemClass.getMethod(itemNameMethodName);
-            
+
             plugin.getLogger().info("NMS 类加载成功!");
 
-            if (Bukkit.getBukkitVersion().startsWith("1.20.6") ||
-                Bukkit.getBukkitVersion().startsWith("1.21")) {
-                
+            if (Bukkit.getBukkitVersion().startsWith("1.20.6")
+                    || Bukkit.getBukkitVersion().startsWith("1.21")) {
+
                 plugin.getLogger().info("检测到 1.20.5+ 版本，设置 DataComponents...");
                 setupDataComponents();
             }
@@ -101,7 +101,7 @@ public class MaterialStackSizeModifier {
     private void setupDataComponents() {
         try {
             Class<?> dataComponentsClass = Class.forName("net.minecraft.core.component.DataComponents");
-            
+
             try {
                 Field maxStackField = dataComponentsClass.getField("MAX_STACK_SIZE");
                 maxStackSizeComponent = maxStackField.get(null);
@@ -163,7 +163,7 @@ public class MaterialStackSizeModifier {
             maxStackField.setAccessible(true);
             maxStackField.set(material, stackSize);
             maxStackField.setAccessible(false);
-            
+
             plugin.getLogger().info("成功修改 Material." + material.name() + ".maxStack = " + stackSize);
             return true;
         } catch (Exception e) {
@@ -242,20 +242,20 @@ public class MaterialStackSizeModifier {
     private boolean setItemFieldMaxStack(Object nmsItem, int stackSize, String itemName) {
         try {
             String[] possibleFieldNames = {"maxStackSize", "c", "d"};
-            
+
             for (String fieldName : possibleFieldNames) {
                 try {
                     Field field = itemClass.getDeclaredField(fieldName);
                     field.setAccessible(true);
                     field.set(nmsItem, stackSize);
                     field.setAccessible(false);
-                    
+
                     plugin.getLogger().info("成功修改 NMS Item." + itemName + "." + fieldName + " = " + stackSize);
                     return true;
                 } catch (NoSuchFieldException e) {
                 }
             }
-            
+
             plugin.getLogger().warning("无法找到 NMS Item 的堆叠大小字段");
             return false;
         } catch (Exception e) {
@@ -265,4 +265,3 @@ public class MaterialStackSizeModifier {
         }
     }
 }
-

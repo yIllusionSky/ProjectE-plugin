@@ -1,8 +1,11 @@
 package org.Little_100.projecte.listeners;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.Little_100.projecte.ProjectE;
-import org.Little_100.projecte.util.InventoryViewHelper;
 import org.Little_100.projecte.gui.PdcItemDebugGUI;
+import org.Little_100.projecte.util.InventoryViewHelper;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,10 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class PdcItemDebugGUIListener implements Listener {
 
@@ -80,7 +79,7 @@ public class PdcItemDebugGUIListener implements Listener {
             if (originalItem.hasItemMeta()) {
                 originalItem.getItemMeta().setLore(null);
             }
-            
+
             gui.showItemDebug(clicked);
         }
     }

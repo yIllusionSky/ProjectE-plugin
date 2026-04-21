@@ -1,8 +1,13 @@
 package org.Little_100.projecte.compatibility.version;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import org.Little_100.projecte.ProjectE;
 import org.Little_100.projecte.managers.EmcManager;
-import org.Little_100.projecte.storage.DatabaseManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -12,21 +17,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-
 public class ModernAdapter implements VersionAdapter {
 
     private EmcManager emcManager;
-    private final DatabaseManager databaseManager;
 
-    ModernAdapter() {
-        this.databaseManager = ProjectE.getInstance().getDatabaseManager();
-    }
+    ModernAdapter() {}
 
     private EmcManager getEmcManager() {
         if (this.emcManager == null) {
@@ -34,6 +29,10 @@ public class ModernAdapter implements VersionAdapter {
         }
 
         return this.emcManager;
+    }
+
+    private org.Little_100.projecte.storage.DatabaseManager getDatabaseManager() {
+        return ProjectE.getInstance().getDatabaseManager();
     }
 
     @Override
@@ -187,7 +186,7 @@ public class ModernAdapter implements VersionAdapter {
                     String correctItemKey = material.getKey().toString();
                     long emc = ((Number) entry.getValue()).longValue();
 
-                    databaseManager.setEmc(correctItemKey, emc, true);
+                    getDatabaseManager().setEmc(correctItemKey, emc, true);
                 } catch (Exception e) {
                     ProjectE.getInstance()
                             .getLogger()
@@ -213,7 +212,8 @@ public class ModernAdapter implements VersionAdapter {
                         if (!(entry.getValue() instanceof Number)) {
                             ProjectE.getInstance()
                                     .getLogger()
-                                    .warning("Invalid locked EMC value for '" + configKey + "': not a number. Skipping.");
+                                    .warning("Invalid locked EMC value for '" + configKey
+                                            + "': not a number. Skipping.");
                             continue;
                         }
 
@@ -225,10 +225,8 @@ public class ModernAdapter implements VersionAdapter {
                         long emc = ((Number) entry.getValue()).longValue();
 
                         // 锁定的EMC值，不会被配方计算覆盖
-                        databaseManager.setEmc(correctItemKey, emc, true);
-                        ProjectE.getInstance()
-                                .getLogger()
-                                .info("Locked EMC for " + correctItemKey + ": " + emc);
+                        getDatabaseManager().setEmc(correctItemKey, emc, true);
+                        ProjectE.getInstance().getLogger().info("Locked EMC for " + correctItemKey + ": " + emc);
                     } catch (Exception e) {
                         ProjectE.getInstance()
                                 .getLogger()
