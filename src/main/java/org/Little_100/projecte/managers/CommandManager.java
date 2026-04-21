@@ -344,7 +344,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
 
             String itemKey = emcManager.getItemKey(itemInHand);
-            databaseManager.setEmc(itemKey, emc);
+            emcManager.setEmcValue(itemInHand, emc);
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("item", itemKey);
             placeholders.put("emc", String.valueOf(emc));

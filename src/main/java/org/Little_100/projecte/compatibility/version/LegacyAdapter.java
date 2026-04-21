@@ -56,12 +56,13 @@ public class LegacyAdapter implements VersionAdapter {
         boolean isCooking = false;
 
         if (recipe instanceof ShapedRecipe) {
-            for (ItemStack ingredient :
-                    ((ShapedRecipe) recipe).getIngredientMap().values()) {
+            ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
+            for (Map.Entry<Character, ItemStack> entry : shapedRecipe.getIngredientMap().entrySet()) {
+                ItemStack ingredient = entry.getValue();
                 if (ingredient == null) continue;
                 long ingredientEmc = getIngredientEmc(ingredient);
                 if (ingredientEmc == 0) return 0;
-                totalEmc += ingredientEmc;
+                totalEmc += ingredientEmc * countIngredientOccurrences(shapedRecipe.getShape(), entry.getKey());
             }
         } else if (recipe instanceof ShapelessRecipe) {
             for (ItemStack ingredient : ((ShapelessRecipe) recipe).getIngredientList()) {
@@ -98,6 +99,18 @@ public class LegacyAdapter implements VersionAdapter {
         }
 
         return recipeEmc;
+    }
+
+    private int countIngredientOccurrences(String[] shape, char ingredientKey) {
+        int count = 0;
+        for (String row : shape) {
+            for (int i = 0; i < row.length(); i++) {
+                if (row.charAt(i) == ingredientKey) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     private long getIngredientEmc(ItemStack ingredient) {

@@ -249,7 +249,7 @@ public class GUIListener implements Listener {
             long itemEmc = ProjectE.getInstance().getEmcManager().getEmc(itemKey);
             if (itemEmc <= 0) return;
 
-            boolean removeRequested = gui.isRemoveMode() || (event.isShiftClick() && event.isLeftClick());
+            boolean removeRequested = gui.isRemoveMode();
             if (removeRequested) {
                 handleRemoveLearnedItem(player, gui, slot, clickedItem, itemKey);
                 return;
@@ -320,6 +320,7 @@ public class GUIListener implements Listener {
                     placeholders.put("amount", String.valueOf(amountToBuy));
                     placeholders.put("item", displayName);
                     player.sendMessage(lang.get("serverside.command.generic.buy_success", placeholders));
+                    reopenBuyTransmutationGui(player, gui);
 
                 } else {
                     player.sendMessage(ProjectE.getInstance()
@@ -418,7 +419,7 @@ public class GUIListener implements Listener {
             }
         }
 
-        updateSellButton(gui);
+        reopenMainTransmutationGui(player);
     }
 
     private void handleLearnScreenClick(InventoryClickEvent event, TransmutationGUI gui) {
@@ -472,7 +473,7 @@ public class GUIListener implements Listener {
             }
         }
 
-        gui.refreshCurrentView();
+        reopenMainTransmutationGui(player);
     }
 
     @EventHandler
@@ -648,7 +649,7 @@ public class GUIListener implements Listener {
 
             inventory.setItem(kleinStarSlot, null);
             player.getInventory().addItem(updatedKleinStar);
-            gui.refreshCurrentView();
+            reopenMainTransmutationGui(player);
 
             Map<String, String> placeholders = new HashMap<>();
             placeholders.put("emc", String.format("%,d", amountToCharge));
@@ -687,6 +688,26 @@ public class GUIListener implements Listener {
             return item.getItemMeta().getDisplayName();
         }
         return item != null ? item.getType().name() : "UNKNOWN";
+    }
+
+    private void reopenMainTransmutationGui(Player player) {
+        ProjectE.getInstance().getSchedulerAdapter().runTask(() -> new TransmutationGUI(player).open());
+    }
+
+    private void reopenBuyTransmutationGui(Player player, TransmutationGUI currentGui) {
+        int currentPage = currentGui.getPage();
+        String searchQuery = currentGui.getSearchQuery();
+        ProjectE.getInstance().getSchedulerAdapter().runTask(() -> {
+            TransmutationGUI newGui = new TransmutationGUI(player);
+            newGui.setState(TransmutationGUI.GuiState.BUY);
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+                newGui.setSearchQuery(searchQuery);
+            }
+            if (currentPage > 0) {
+                newGui.setPage(currentPage);
+            }
+            newGui.open();
+        });
     }
 
     private void returnCursorItemToPlayer(InventoryClickEvent event) {

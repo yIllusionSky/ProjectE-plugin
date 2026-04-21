@@ -40,8 +40,7 @@ clientside:
       emc_stack: "§6EMC (一组): {stack_emc}"
       buy_one: "§7左键点击购买 1 个"
       buy_stack: "§7右键点击购买 {amount} 个"
-      remove_shift: "§7Shift + 左键移除已学习物品"
-      remove_mode: "§7切到红石模式后点击也可移除"
+      remove_mode: "§7切到红石模式后点击可移除"
     search_sign:
       line1: "请在下面输入搜索内容"
   alchemical_bag:

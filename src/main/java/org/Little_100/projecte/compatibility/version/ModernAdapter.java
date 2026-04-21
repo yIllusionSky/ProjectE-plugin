@@ -59,11 +59,12 @@ public class ModernAdapter implements VersionAdapter {
 
         if (recipe instanceof ShapedRecipe) {
             ShapedRecipe shapedRecipe = (ShapedRecipe) recipe;
-            for (RecipeChoice choice : shapedRecipe.getChoiceMap().values()) {
+            for (Map.Entry<Character, RecipeChoice> entry : shapedRecipe.getChoiceMap().entrySet()) {
+                RecipeChoice choice = entry.getValue();
                 if (choice == null) continue;
                 long ingredientEmc = getChoiceEmc(choice);
                 if (ingredientEmc == 0) return 0;
-                totalEmc += ingredientEmc;
+                totalEmc += ingredientEmc * countIngredientOccurrences(shapedRecipe.getShape(), entry.getKey());
             }
         } else if (recipe instanceof ShapelessRecipe) {
             ShapelessRecipe shapelessRecipe = (ShapelessRecipe) recipe;
@@ -144,6 +145,18 @@ public class ModernAdapter implements VersionAdapter {
         }
 
         return lowestEmc > 0 ? lowestEmc : 0;
+    }
+
+    private int countIngredientOccurrences(String[] shape, char ingredientKey) {
+        int count = 0;
+        for (String row : shape) {
+            for (int i = 0; i < row.length(); i++) {
+                if (row.charAt(i) == ingredientKey) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     @Override

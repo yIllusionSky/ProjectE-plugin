@@ -40,7 +40,6 @@ clientside:
       emc_stack: "§6EMC (疊): {stack_emc}"
       buy_one: "§7左擊購一"
       buy_stack: "§7右擊購 {amount}"
-      remove_shift: "§7Shift + 左擊可移除已習之物"
       remove_mode: "§7切至紅石模式後點擊亦可移除"
     search_sign:
       line1: "请于下方键入欲寻之物"

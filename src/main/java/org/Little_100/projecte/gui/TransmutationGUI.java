@@ -255,7 +255,6 @@ public class TransmutationGUI implements InventoryHolder {
                             languageManager.get("clientside.transmutation_table.item_lore.emc_stack", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.buy_one", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.buy_stack", lorePlaceholders),
-                            languageManager.get("clientside.transmutation_table.item_lore.remove_shift"),
                             languageManager.get("clientside.transmutation_table.item_lore.remove_mode")));
                     item.setItemMeta(meta);
                     // 计算槽位

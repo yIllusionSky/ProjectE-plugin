@@ -178,7 +178,7 @@ public final class ProjectE extends JavaPlugin {
         // 初始化EMC管理器
         emcManager = new EmcManager(this);
         try {
-            recalculateBaseEmcValues(false);
+            recalculateBaseEmcValues(true);
         } catch (Exception e) {
             getLogger()
                     .severe(
@@ -571,7 +571,7 @@ public final class ProjectE extends JavaPlugin {
             condenserManager.resetPersistentData();
         }
 
-        recalculateBaseEmcValues(false);
+        recalculateBaseEmcValues(true);
         loadCustomEmcValues();
         reapplyProgrammaticEmcValues();
 
@@ -919,7 +919,6 @@ public final class ProjectE extends JavaPlugin {
                 return AlchemicalBagManager.getAlchemicalBag();
             case "transmutation_tablet_book":
                 return TransmutationTabletBook.createTransmutationTabletBook();
-
             default:
                 // 尝试将剩余的键解析为原生Minecraft材料
                 Material material = versionAdapter.getMaterial(key.toUpperCase());

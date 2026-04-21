@@ -42,7 +42,6 @@ clientside:
       emc_stack: "§6EMC (Stack): {stack_emc}"
       buy_one: "§7Left-click to buy 1"
       buy_stack: "§7Right-click to buy {amount}"
-      remove_shift: "§7Shift + Left-click to remove the learned item"
       remove_mode: "§7You can also remove it in redstone mode"
     search_sign:
       line1: "Enter search term below"
