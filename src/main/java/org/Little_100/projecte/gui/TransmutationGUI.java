@@ -55,6 +55,12 @@ public class TransmutationGUI implements InventoryHolder {
         player.openInventory(inventory);
     }
 
+    private void refreshOpenTitle() {
+        if (player.getOpenInventory().getTopInventory().equals(inventory)) {
+            player.getOpenInventory().setTitle(getTitle());
+        }
+    }
+
     private String getTitle() {
         String formattedEmc = String.format("%,d", databaseManager.getPlayerEmc(player.getUniqueId()));
         Map<String, String> placeholders = new HashMap<>();
@@ -255,7 +261,6 @@ public class TransmutationGUI implements InventoryHolder {
                             languageManager.get("clientside.transmutation_table.item_lore.emc_stack", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.buy_one", lorePlaceholders),
                             languageManager.get("clientside.transmutation_table.item_lore.buy_stack", lorePlaceholders),
-                            languageManager.get("clientside.transmutation_table.item_lore.remove_shift"),
                             languageManager.get("clientside.transmutation_table.item_lore.remove_mode")));
                     item.setItemMeta(meta);
                     // 计算槽位
@@ -350,11 +355,13 @@ public class TransmutationGUI implements InventoryHolder {
         this.currentState = state;
         this.page = 0;
         this.removeMode = false;
+        refreshOpenTitle();
         initializeItems();
     }
 
     public void setPage(int page) {
         this.page = page;
+        refreshOpenTitle();
         initializeItems();
     }
 
@@ -369,6 +376,7 @@ public class TransmutationGUI implements InventoryHolder {
     public void setSearchQuery(String query) {
         this.searchQuery = query;
         this.page = 0;
+        refreshOpenTitle();
         initializeItems();
     }
 
@@ -378,10 +386,12 @@ public class TransmutationGUI implements InventoryHolder {
 
     public void toggleRemoveMode() {
         removeMode = !removeMode;
+        refreshOpenTitle();
         initializeItems();
     }
 
     public void refreshCurrentView() {
+        refreshOpenTitle();
         initializeItems();
     }
 

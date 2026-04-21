@@ -249,7 +249,7 @@ public class GUIListener implements Listener {
             long itemEmc = ProjectE.getInstance().getEmcManager().getEmc(itemKey);
             if (itemEmc <= 0) return;
 
-            boolean removeRequested = gui.isRemoveMode() || (event.isShiftClick() && event.isLeftClick());
+            boolean removeRequested = gui.isRemoveMode();
             if (removeRequested) {
                 handleRemoveLearnedItem(player, gui, slot, clickedItem, itemKey);
                 return;
