@@ -6,10 +6,13 @@
 *.iws
 
 # Gradle
-.gradle/
+.gradle/*
+
 build/
 gradle/
-bin/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 out/
 .gradle-home
 # Minecraft/Plugin
